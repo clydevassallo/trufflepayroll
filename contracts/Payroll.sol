@@ -1,8 +1,9 @@
 pragma solidity ^0.4.24;
 
 import "./EmployeeContractStorage.sol";
+import 'zeppelin/contracts/ownership/Ownable.sol';
 
-contract Payroll {
+contract Payroll is Ownable {
 
     /* Data Definitions */  
 
@@ -23,7 +24,13 @@ contract Payroll {
 
     // Callable By Owner
 
-    function addFunds() {
+    function addFunds() 
+    public onlyOwner {
+
+    }
+
+    function withdrawFunds() 
+    public onlyOwner {
 
     }
 
