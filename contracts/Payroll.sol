@@ -27,7 +27,7 @@ contract Payroll is Ownable, DayLimit {
 
     /* Functions */       
 
-    // Callable By Owner
+    // Callable By Owner //
 
     function addFunds() 
     public onlyOwner payable {
@@ -45,7 +45,7 @@ contract Payroll is Ownable, DayLimit {
         channels[employee].timeOutChannel();
     }
 
-    // Callable By Employee
+    // Callable By Employee //
 
     function punchIn() 
     public onlyEmployee limitedDaily(1) {
@@ -60,8 +60,11 @@ contract Payroll is Ownable, DayLimit {
              - Create a new channel in the map and transfer the maximum daily amount 
                from this contract to the channel. (timeout should be 1 day)
         */
-        channels[msg.sender] = (new Channel).value(employeeMaximumSalaryPerDay)(msg.sender, owner, 1000);
-        
+
+        // Try to get hours till end of day?
+        uint timeOutValue = 24 hours - (now / 24 hours);
+
+        channels[msg.sender] = (new Channel).value(employeeMaximumSalaryPerDay)(msg.sender, owner, timeOutValue);
     }
 
     function punchOut(bytes32 h, uint8 v, bytes32 r, bytes32 s) 
