@@ -14,7 +14,7 @@ contract Payroll is Ownable, DayLimit {
 
     EmployeeContractStorage public employeeContractStorage;
 
-    address owner; 
+    address owner;
 
     mapping (address => Channel) channels;
 
