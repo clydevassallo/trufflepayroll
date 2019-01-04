@@ -36,7 +36,7 @@ contract Payroll is Ownable, DayLimit {
 
     function withdrawFunds() 
     public onlyOwner {
-
+        // Add withdraw pattern
     }
 
     function releaseChannel(uint _employeeId) 
