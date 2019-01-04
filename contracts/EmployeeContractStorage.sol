@@ -98,9 +98,15 @@ contract EmployeeContractStorage {
     function employeeExists(address _employeeAddress) 
     public 
     view 
-    returns (bool)
-    {
+    returns (bool) {
         uint employeeId = readEmployeeId(_employeeAddress);
         return employeeId > 0 && employeeContractsIdMap[employeeId].exists == true; // Added 2nd check for redundancy
+    }
+
+    function readMaximumSalaryPerDay(uint _id) 
+    public employeeContractExists(_id)
+    view
+    returns (uint) {
+        return employeeContractsIdMap[_id].maximumSalaryPerDay;
     }
 }
