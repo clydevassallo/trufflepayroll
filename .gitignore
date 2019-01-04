@@ -18,6 +18,8 @@ local.properties
 .loadpath
 .recommenders
 
+tmp-*
+
 # External tool builders
 .externalToolBuilders/
 
