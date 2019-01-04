@@ -17,6 +17,7 @@ contract Channel {
     }
 
     // SEE: https://github.com/ethereum/solidity/blob/develop/docs/solidity-by-example.rst#micropayment-channel 
+    // v used to check which account's private key was used to sign the message, and the transaction's sender
     function closeChannel(bytes32 h, uint8 v, bytes32 r, bytes32 s, uint value) 
     public payable {
 
