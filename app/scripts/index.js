@@ -6,10 +6,10 @@ import { default as Web3 } from 'web3'
 import { default as contract } from 'truffle-contract'
 
 // Import our contract artifacts and turn them into usable abstractions.
-import metaCoinArtifact from '../../build/contracts/MetaCoin.json'
+import employeeStorageArtifact from '../../build/contracts/EmployeeContractStorage.json'
 
-// MetaCoin is our usable abstraction, which we'll use through the code below.
-const MetaCoin = contract(metaCoinArtifact)
+// EmployeeContractStorage is our usable abstraction, which we'll use through the code below.
+const EmployeeContractStorage = contract(employeeStorageArtifact)
 
 // The following code is simple to show off interacting with your contracts.
 // As your needs grow you will likely need to change its form and structure.
@@ -21,8 +21,8 @@ const App = {
   start: function () {
     const self = this
 
-    // Bootstrap the MetaCoin abstraction for Use.
-    MetaCoin.setProvider(web3.currentProvider)
+    // Bootstrap the EmployeeContractStorage abstraction for Use.
+    EmployeeContractStorage.setProvider(web3.currentProvider)
 
     // Get the initial account balance so it can be displayed.
     web3.eth.getAccounts(function (err, accs) {
@@ -39,7 +39,23 @@ const App = {
       accounts = accs
       account = accounts[0]
 
+      self.createEmployee(accounts[1], 10, 100000, 8);
+
+      /*
+      Call fns in this 
       self.refreshBalance()
+      */
+
+      /* 
+      Subscribe to comparing event
+      
+      var myEvent = instance.comparing({},{fromBlock: 0, toBlock: 'latest');
+      myEvent.watch(function(error, result) {
+        console.log("event called");
+        console.log(result);
+        console.log(result.args);
+      });
+      */
     })
   },
 
@@ -48,42 +64,47 @@ const App = {
     status.innerHTML = message
   },
 
-  refreshBalance: function () {
+  createEmployee: function (employeeAccount, hourlySalary, maxSalaryPerDay, maxHoursPerDay) {
     const self = this
 
-    let meta
-    MetaCoin.deployed().then(function (instance) {
-      meta = instance
-      return meta.getBalance.call(account, { from: account })
+    let employeeContractStorage
+    EmployeeContractStorage.deployed().then(function (instance) {
+      employeeContractStorage = instance
+      return employeeContractStorage
+      .createEmployeeContract(employeeAccount, hourlySalary, 
+        maxSalaryPerDay, maxHoursPerDay, 
+        {from: accounts[0]}
+      );
     }).then(function (value) {
-      const balanceElement = document.getElementById('balance')
-      balanceElement.innerHTML = value.valueOf()
+      // promise
+      alert("Employee was created with id " + value);
     }).catch(function (e) {
-      console.log(e)
-      self.setStatus('Error getting balance; see log.')
-    })
-  },
-
-  sendCoin: function () {
-    const self = this
-
-    const amount = parseInt(document.getElementById('amount').value)
-    const receiver = document.getElementById('receiver').value
-
-    this.setStatus('Initiating transaction... (please wait)')
-
-    let meta
-    MetaCoin.deployed().then(function (instance) {
-      meta = instance
-      return meta.sendCoin(receiver, amount, { from: account })
-    }).then(function () {
-      self.setStatus('Transaction complete!')
-      self.refreshBalance()
-    }).catch(function (e) {
-      console.log(e)
-      self.setStatus('Error sending coin; see log.')
+      alert(e);
+      self.setStatus('Error; see log.')
     })
   }
+
+  // ,
+  // sendCoin: function () {
+  //   const self = this
+
+  //   const amount = parseInt(document.getElementById('amount').value)
+  //   const receiver = document.getElementById('receiver').value
+
+  //   this.setStatus('Initiating transaction... (please wait)')
+
+  //   let meta
+  //   MetaCoin.deployed().then(function (instance) {
+  //     meta = instance
+  //     return meta.sendCoin(receiver, amount, { from: account })
+  //   }).then(function () {
+  //     self.setStatus('Transaction complete!')
+  //     self.refreshBalance()
+  //   }).catch(function (e) {
+  //     console.log(e)
+  //     self.setStatus('Error sending coin; see log.')
+  //   })
+  // }
 }
 
 window.App = App
@@ -103,13 +124,13 @@ window.addEventListener('load', function () {
     window.web3 = new Web3(web3.currentProvider)
   } else {
     console.warn(
-      'No web3 detected. Falling back to http://127.0.0.1:9545.' +
+      'No web3 detected. Falling back to http://127.0.0.1:7545.' +
       ' You should remove this fallback when you deploy live, as it\'s inherently insecure.' +
       ' Consider switching to Metamask for development.' +
       ' More info here: http://truffleframework.com/tutorials/truffle-and-metamask'
     )
     // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-    window.web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:9545'))
+    window.web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:7545'))
   }
 
   App.start()
