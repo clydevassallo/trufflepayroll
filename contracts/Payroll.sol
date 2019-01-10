@@ -64,13 +64,19 @@ contract Payroll is Ownable, DayLimit {
         // Try to get hours till end of day?
         uint timeOutValue = 24 hours - (now / 24 hours);
 
-        channels[msg.sender] = (new Channel).value(employeeMaximumSalaryPerDay)(msg.sender, address(this), timeOutValue);
+        channels[msg.sender] = (new Channel).value(employeeMaximumSalaryPerDay);
+        channels[msg.sender].openChannel(msg.sender, address(this), timeOutValue);
     }
 
     function punchOut(bytes32 h, uint8 v, bytes32 r, bytes32 s) 
     public onlyEmployee limitedDaily(1) {
         uint value = 10; // should this be the calculation based on rate?
         channels[msg.sender].closeChannel(h, v, r, s, value);
+    }
+
+    // default fn
+    function() public {
+        revert("Please use a valid method");
     }
 
 }

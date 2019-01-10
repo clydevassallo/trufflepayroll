@@ -8,8 +8,12 @@ contract Channel {
     uint channelTimeout;
     mapping (bytes32 => address) signatures;
 
-    constructor(address to, address from, uint timeout) 
+    constructor () 
     public payable {
+
+    }
+    
+    function openChannel(address to, address from, uint timeout) {
         channelRecipient = to;
         channelSender = from;
         startDate = now;
