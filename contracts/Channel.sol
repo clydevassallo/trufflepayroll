@@ -7,13 +7,15 @@ contract Channel {
     uint startDate;
     uint channelTimeout;
     mapping (bytes32 => address) signatures;
+    uint channelValue;
 
     constructor () 
     public payable {
-
+        channelValue = msg.value;
     }
     
-    function openChannel(address to, address from, uint timeout) {
+    function openChannel(address to, address from, uint timeout) 
+    public {
         channelRecipient = to;
         channelSender = from;
         startDate = now;

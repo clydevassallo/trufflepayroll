@@ -64,7 +64,7 @@ contract Payroll is Ownable, DayLimit {
         // Try to get hours till end of day?
         uint timeOutValue = 24 hours - (now / 24 hours);
 
-        channels[msg.sender] = (new Channel).value(employeeMaximumSalaryPerDay);
+        channels[msg.sender] = Channel((new Channel).value(employeeMaximumSalaryPerDay)());
         channels[msg.sender].openChannel(msg.sender, address(this), timeOutValue);
     }
 
