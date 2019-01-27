@@ -10,8 +10,6 @@ contract EmployeeContractStorage {
         address incomeAccount;
 
         uint hourlySalary;
-        
-        uint maximumSalaryPerDay;
         uint maximumHoursPerDay;
     }
 
@@ -40,7 +38,7 @@ contract EmployeeContractStorage {
 
     /* Functions */
 
-    function createEmployeeContract(address _incomeAccount, uint _hourlySalary, uint _maximumSalaryPerDay, uint _maximumHoursPerDay) 
+    function createEmployeeContract(address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay) 
     public 
     returns (uint) {
         // Check that incomeAccount is unique (required for access control in employeeonly function for payroll) 
@@ -54,7 +52,6 @@ contract EmployeeContractStorage {
         employeeContractsIdMap[employeeId].id = employeeId;
         employeeContractsIdMap[employeeId].incomeAccount = _incomeAccount;
         employeeContractsIdMap[employeeId].hourlySalary = _hourlySalary;
-        employeeContractsIdMap[employeeId].maximumSalaryPerDay = _maximumSalaryPerDay;
         employeeContractsIdMap[employeeId].maximumHoursPerDay = _maximumHoursPerDay;
 
         // Add address to Employees to Id map
@@ -103,10 +100,17 @@ contract EmployeeContractStorage {
         return employeeId > 0 && employeeContractsIdMap[employeeId].exists == true; // Added 2nd check for redundancy
     }
 
-    function readMaximumSalaryPerDay(uint _id) 
+    function readMaximumHoursPerDay(uint _id) 
     public employeeContractExists(_id)
     view
     returns (uint) {
-        return employeeContractsIdMap[_id].maximumSalaryPerDay;
+        return employeeContractsIdMap[_id].maximumHoursPerDay;
+    }
+
+    function readHourlySalary(uint _id) 
+    public employeeContractExists(_id)
+    view
+    returns (uint) {
+        return employeeContractsIdMap[_id].hourlySalary;
     }
 }

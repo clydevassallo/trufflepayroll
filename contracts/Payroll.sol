@@ -1,12 +1,11 @@
 pragma solidity ^0.4.24;
 
 import "./EmployeeContractStorage.sol";
-import "./Channel.sol";
+import "./OneTimeChannel.sol";
 
 import "zeppelin/contracts/ownership/Ownable.sol";
-import "zeppelin/contracts/DayLimit.sol";
 
-contract Payroll is Ownable, DayLimit {
+contract Payroll is Ownable {
 
     /* Data Definitions */  
 
@@ -16,7 +15,7 @@ contract Payroll is Ownable, DayLimit {
 
     address owner;
 
-    mapping (address => Channel) channels;
+    mapping (address => OneTimeChannel) channels;
 
     /* Function Modifiers */
 
@@ -48,12 +47,15 @@ contract Payroll is Ownable, DayLimit {
     // Callable By Employee //
 
     function punchIn() 
-    public onlyEmployee limitedDaily(1) {
+    public onlyEmployee {
         // Get employee id
         uint employeeId = employeeContractStorage.readEmployeeId(msg.sender);
 
-        // Get Maximum Salary Per Day
-        uint employeeMaximumSalaryPerDay = employeeContractStorage.readMaximumSalaryPerDay(employeeId);
+        // Get Salary Per Hour 
+        uint employeeSalaryPerHour = employeeContractStorage.readHourlySalary(employeeId);
+
+        // Get Maximum Hours Per Day
+        uint employeeMaximumHoursPerDay = employeeContractStorage.readMaximumHoursPerDay(employeeId);
 
         /*
             Tricky Part: 
@@ -64,14 +66,16 @@ contract Payroll is Ownable, DayLimit {
         // Try to get hours till end of day?
         uint timeOutValue = 24 hours - (now / 24 hours);
 
-        channels[msg.sender] = Channel((new Channel).value(employeeMaximumSalaryPerDay)());
-        channels[msg.sender].openChannel(msg.sender, address(this), timeOutValue);
+        // Calculate maximum salary for day
+        uint employeeMaximumSalaryPerDay = employeeSalaryPerHour * employeeMaximumHoursPerDay;
+
+        channels[msg.sender] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerDay)(address(this), msg.sender, timeOutValue));    
     }
 
-    function punchOut(bytes32 h, uint8 v, bytes32 r, bytes32 s) 
-    public onlyEmployee limitedDaily(1) {
+    function punchOut(bytes32 _hash, bytes _signature) 
+    public onlyEmployee {
         uint value = 10; // should this be the calculation based on rate?
-        channels[msg.sender].closeChannel(h, v, r, s, value);
+        channels[msg.sender].closeChannel(_hash, _signature, value);
     }
 
     // default fn
