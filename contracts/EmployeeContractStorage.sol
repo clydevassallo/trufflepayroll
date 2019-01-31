@@ -113,4 +113,6 @@ contract EmployeeContractStorage {
     returns (uint) {
         return employeeContractsIdMap[_id].hourlySalary;
     }
+
+    
 }

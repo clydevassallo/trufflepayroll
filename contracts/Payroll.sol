@@ -22,17 +22,34 @@ contract Payroll is Ownable {
     /* Function Modifiers */
 
     modifier onlyEmployee() {
-        require(employeeContractStorage.employeeExists(msg.sender) == true, "Only employees can call this function");
+        require(getEmployeeContractStorage().employeeExists(msg.sender) == true, "Only employees can call this function");
         _;
     }
+
+    modifier externalStorageSet() {
+        require(address(employeeContractStorage) != address(0), "Initialize the employee storage before calling this function");
+        _;
+    }
+
+    /* Constructor */
+    constructor() 
+    public {
+
+    }
+    
 
     /* Functions */       
 
     // Callable By Owner //
 
+    function setEmployeeContractStorage(address _employeeContractStorageAddress) 
+    public onlyOwner {
+        employeeContractStorage = EmployeeContractStorage(_employeeContractStorageAddress);
+    }
+
     function addFunds() 
     public onlyOwner payable {
-
+        // Emit event with balance update
     }
 
     function withdrawFunds() 
@@ -49,9 +66,15 @@ contract Payroll is Ownable {
             isEmployeePunchedIn[_employeeId] = false;
         }
 
-        address employee = employeeContractStorage.readEmployeeContractIncomeAccount(_employeeId);
+        address employee = getEmployeeContractStorage().readEmployeeContractIncomeAccount(_employeeId);
         channels[employee].timeOutChannel();
         channels[employee] = OneTimeChannel(0);
+    }
+
+    function hireEmployee(address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay)
+    public onlyOwner {
+        uint employeeId = getEmployeeContractStorage().createEmployeeContract(_incomeAccount, _hourlySalary, _maximumHoursPerDay);
+        // raise event
     }
 
     // Callable By Employee //
@@ -59,7 +82,7 @@ contract Payroll is Ownable {
     function punchIn() 
     public onlyEmployee {
         // Get employee id
-        uint employeeId = employeeContractStorage.readEmployeeId(msg.sender);
+        uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
 
         // Ensure employee is not punched in and punch in
         require(isEmployeePunchedIn[employeeId] == false);
@@ -69,10 +92,10 @@ contract Payroll is Ownable {
         require(channels[msg.sender] == OneTimeChannel(0), "A channel already exists. Probably a punch out was missed. Ask employer to timeout the channel.");
 
         // Get Salary Per Hour 
-        uint employeeSalaryPerHour = employeeContractStorage.readHourlySalary(employeeId);
+        uint employeeSalaryPerHour = getEmployeeContractStorage().readHourlySalary(employeeId);
 
         // Get Maximum Hours Per Day
-        uint employeeMaximumHoursPerDay = employeeContractStorage.readMaximumHoursPerDay(employeeId);
+        uint employeeMaximumHoursPerDay = getEmployeeContractStorage().readMaximumHoursPerDay(employeeId);
 
         /*
             Tricky Part: 
@@ -93,7 +116,7 @@ contract Payroll is Ownable {
     function punchOut(bytes32 _hash, bytes _signature) 
     public onlyEmployee {
         // Get employee id
-        uint employeeId = employeeContractStorage.readEmployeeId(msg.sender);
+        uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
 
         // Ensure employee is punched in and punch out
         require(isEmployeePunchedIn[employeeId] == true);
@@ -102,6 +125,14 @@ contract Payroll is Ownable {
         uint value = 10; // should this be the calculation based on rate?
         channels[msg.sender].closeChannel(_hash, _signature, value);
         channels[msg.sender] = OneTimeChannel(0);
+    }
+
+    /* Private functions */
+
+    function getEmployeeContractStorage() 
+    private externalStorageSet
+    returns (EmployeeContractStorage) {
+        return employeeContractStorage;
     }
 
     // default fn
