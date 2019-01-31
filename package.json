@@ -44,6 +44,8 @@
     "big-number": "^2.0.0"
   },
   "dependencies": {
-    "gulp": "^3.9.0"
+    "chai": "^4.2.0",
+    "gulp": "^3.9.0",
+    "truffle-assertions": "^0.7.2"
   }
 }
