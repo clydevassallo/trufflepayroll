@@ -33,7 +33,7 @@ contract EmployeeContractStorage {
     /* Constructor */ 
     
     constructor() public {
-        employeeCounter = 1; // Start at 1 to avoid default int
+        employeeCounter = 5; // Start at 1 to avoid default int
     }
 
     /* Functions */
@@ -58,7 +58,7 @@ contract EmployeeContractStorage {
         employeesToIdMap[_incomeAccount] = employeeId;
 
         // Increment employee counter
-        employeeCounter++;
+        employeeCounter = employeeCounter + 1;
 
         return employeeId;
     }
@@ -108,11 +108,11 @@ contract EmployeeContractStorage {
     }
 
     function readHourlySalary(uint _id) 
-    public employeeContractExists(_id)
+    public // employeeContractExists(_id)
     view
     returns (uint) {
         return employeeContractsIdMap[_id].hourlySalary;
     }
 
-    
+
 }
