@@ -53,10 +53,23 @@ const App = {
         {from: account}
       );
     }).then(function (value) {
-      // promise
-      alert("Employee was created");
+      Swal.fire({
+        position: 'top-end',
+        type: 'success',
+        title: 'Employee Account was successfully created!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
     }).catch(function (e) {
-      alert(e);
+      Swal.fire({
+        position: 'top-end',
+        type: 'error',
+        title: 'Failed to create employee!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
     })
   },
 
