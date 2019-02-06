@@ -81,6 +81,44 @@ const App = {
     }).then(function (employeeCount) {
       $('#admin-count-employees-text').text('Number of Employees: ' + employeeCount);
     })
+  },
+
+  isEmployed: function (potentialEmployeeAccount) {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll.isEmployed.call(potentialEmployeeAccount);
+    }).then(function (isEmployed) {
+      if (isEmployed) {
+        Swal.fire({
+          position: 'top-end',
+          type: 'success',
+          title: 'Employee with that address is employed',
+          showConfirmButton: false,
+          timer: 1500,
+          width: 300
+        });
+      } else {
+        Swal.fire({
+          position: 'top-end',
+          type: 'error',
+          title: 'Employee with that address is not employed',
+          showConfirmButton: false,
+          timer: 1500,
+          width: 300
+        });
+      }
+    })
+  },
+
+  getPayrollBalance: function() {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll.getBalance.call();
+    }).then(function (balance) {
+      $('#admin-get-payroll-balance-text').text('Payroll Balance: ' + balance);
+    })
   }
 }
 
@@ -108,6 +146,22 @@ $('#admin-hire-employee-form').on('submit', function (e) {
 
 $('#admin-count-employees-text').on('show.bs.collapse', function(e) {
   App.countEmployees();
+})
+
+$('#admin-is-employed-form').on('submit', function (e) {
+  e.preventDefault();
+
+  /* ====================== Call Solidity Hire Employee ======================= */
+  /* data: address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay */
+  let walletAddress = $('#potential-employee-wallet-address').val();
+
+  console.log(walletAddress);
+
+  App.isEmployed(walletAddress);
+})
+
+$('#admin-get-payroll-balance-text').on('show.bs.collapse', function(e) {
+  App.getPayrollBalance();
 })
 
 window.App = App

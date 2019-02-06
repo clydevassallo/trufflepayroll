@@ -57,6 +57,12 @@ contract Payroll is Ownable {
         // Add withdraw pattern
     }
 
+    function getBalance() 
+    public view
+    returns (uint) {
+        return this.balance;
+    }
+
     function releaseChannel(uint _employeeId) 
     public onlyOwner {
         require (address(channels[employee]) != address(0));
@@ -83,6 +89,12 @@ contract Payroll is Ownable {
     public view onlyOwner
     returns (uint) {
         return getEmployeeContractStorage().getNumberOfEmployees();
+    }
+
+    function isEmployed(address _employeeAddress) 
+    public view onlyOwner 
+    returns (bool) {
+        return getEmployeeContractStorage().employeeExists(_employeeAddress);
     }
 
     // Callable By Employee //
