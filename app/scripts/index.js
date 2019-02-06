@@ -7,9 +7,11 @@ import { default as contract } from 'truffle-contract'
 
 // Import our contract artifacts and turn them into usable abstractions.
 import employeeStorageArtifact from '../../build/contracts/EmployeeContractStorage.json'
+import payrollArtifact from '../../build/contracts/Payroll.json'
 
 // EmployeeContractStorage is our usable abstraction, which we'll use through the code below.
 const EmployeeContractStorage = contract(employeeStorageArtifact)
+const Payroll = contract(payrollArtifact)
 
 // The following code is simple to show off interacting with your contracts.
 // As your needs grow you will likely need to change its form and structure.
@@ -22,7 +24,8 @@ const App = {
     const self = this
 
     // Bootstrap the EmployeeContractStorage abstraction for Use.
-    EmployeeContractStorage.setProvider(web3.currentProvider)
+    EmployeeContractStorage.setProvider(web3.currentProvider);
+    Payroll.setProvider(web3.currentProvider);
 
     // Get the initial account balance so it can be displayed.
     web3.eth.getAccounts(function (err, accs) {
@@ -36,76 +39,63 @@ const App = {
         return
       }
 
-      accounts = accs
-      account = accounts[0]
-
-      self.createEmployee(accounts[1], 10, 100000, 8);
-
-      /*
-      Call fns in this 
-      self.refreshBalance()
-      */
-
-      /* 
-      Subscribe to comparing event
-      
-      var myEvent = instance.comparing({},{fromBlock: 0, toBlock: 'latest');
-      myEvent.watch(function(error, result) {
-        console.log("event called");
-        console.log(result);
-        console.log(result.args);
-      });
-      */
+      accounts = accs;
+      account = accounts[0];
     })
   },
 
-  setStatus: function (message) {
-    const status = document.getElementById('status')
-    status.innerHTML = message
-  },
-
-  createEmployee: function (employeeAccount, hourlySalary, maxSalaryPerDay, maxHoursPerDay) {
-    const self = this
-
-    let employeeContractStorage
-    EmployeeContractStorage.deployed().then(function (instance) {
-      employeeContractStorage = instance
-      return employeeContractStorage
-      .createEmployeeContract(employeeAccount, hourlySalary, 
-        maxSalaryPerDay, maxHoursPerDay, 
-        {from: accounts[0]}
+  hireEmployee: function (employeeAccount, hourlySalary, maxHoursPerDay) {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll
+      .hireEmployee(employeeAccount, hourlySalary, maxHoursPerDay, 
+        {from: account}
       );
     }).then(function (value) {
       // promise
-      alert("Employee was created with id " + value);
+      alert("Employee was created");
     }).catch(function (e) {
       alert(e);
-      self.setStatus('Error; see log.')
+    })
+  },
+
+  countEmployees: function() {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll.countEmployees.call();
+    }).then(function (employeeCount) {
+      $('#admin-count-employees-text').text('Number of Employees: ' + employeeCount);
     })
   }
-
-  // ,
-  // sendCoin: function () {
-  //   const self = this
-
-  //   const amount = parseInt(document.getElementById('amount').value)
-  //   const receiver = document.getElementById('receiver').value
-
-  //   this.setStatus('Initiating transaction... (please wait)')
-
-  //   let meta
-  //   MetaCoin.deployed().then(function (instance) {
-  //     meta = instance
-  //     return meta.sendCoin(receiver, amount, { from: account })
-  //   }).then(function () {
-  //     self.setStatus('Transaction complete!')
-  //     self.refreshBalance()
-  //   }).catch(function (e) {
-  //     console.log(e)
-  //     self.setStatus('Error sending coin; see log.')
-  //   })
-  // }
 }
+
+$('#admin-hire-employee').on('click', function (e) {
+  console.log("CLICKED HIRE EMPLOYEE");
+})
+
+$('#admin-hire-employee-form').on('submit', function (e) {
+  e.preventDefault();
+
+  /* ====================== Call Solidity Hire Employee ======================= */
+  /* data: address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay */
+  let name = $('#employee-name').val();
+  let walletAddress = $('#employee-wallet-address').val();
+  let hourlySalary = $('#employee-hourly-salary').val();
+  let maxHoursPerDay = $('#employee-max-hours-per-day').val();
+  
+  console.log(name);
+  console.log(walletAddress);
+  console.log(hourlySalary);
+  console.log(maxHoursPerDay);
+
+  App.hireEmployee(walletAddress, hourlySalary, maxHoursPerDay);
+})
+
+$('#admin-count-employees-text').on('show.bs.collapse', function(e) {
+  App.countEmployees();
+})
 
 window.App = App
 
@@ -134,4 +124,6 @@ window.addEventListener('load', function () {
   }
 
   App.start()
+  
 })
+

@@ -1,23 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>MetaCoin - Truffle Webpack Demo w/ Frontend</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>Truffle Payroll</title>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-  <script src="./app.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 </head>
 <body>
-  <h1>MetaCoin</h1>
-  <h2>Example Truffle Dapp</h2>
-  <h3>You have <span class="black"><span id="balance"></span> META</span></h3>
-
-  <br>
-  <h1>Send MetaCoin</h1>
-  <br><label for="amount">Amount:</label><input type="text" id="amount" placeholder="e.g., 95"></input>
-  <br><label for="receiver">To Address:</label><input type="text" id="receiver" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"></input>
-  <br><br><button id="send" onclick="App.sendCoin()">Send MetaCoin</button>
-  <br><br>
-  <span id="status"></span>
-  <br>
-  <span class="hint"><strong>Hint:</strong> open the browser developer console to view any errors and warnings.</span>
+  <h1>Hello, world!</h1>
+  <div style="background-color:bisque" class="container-fluid">
+    <div style="background-color:white" class="row">
+        <div style="background-color:bisque" class="col-6">
+          <button id="admin-hire-employee" type="button" class="btn btn-primary" data-target="#admin-hire-employee-form" data-toggle="collapse">
+            Hire New Employee
+          </button>
+        </div>
+        <div style="background-color:bisque" class="col-6">
+            <form id="admin-hire-employee-form" class="collapse" >
+              <div class="form-group">
+                <label for="employee-name">Name</label>
+                <input id="employee-name" type="text" class="form-control" placeholder="Enter name">
+              </div>
+              <div class="form-group">
+                <label for="employee-wallet-address">Wallet Address</label>
+                <input id="employee-wallet-address" type="text" class="form-control" placeholder="Enter employee wallet address">
+              </div>
+              <div class="form-group">
+                  <label for="employee-hourly-salary">Hourly Salary</label>
+                  <input id="employee-hourly-salary" type="number" class="form-control" placeholder="Enter employee hourly salary in €">
+              </div>
+              <div class="form-group">
+                  <label for="employee-max-hours-per-day">Max Hours Per Day</label>
+                  <input id="employee-max-hours-per-day" type="number" class="form-control" placeholder="Enter employee max hours per day">
+              </div>
+              <button id="admin-hire-employee-submit" type="submit" class="btn btn-primary">Submit</button>
+            </form>  
+        </div>
+        <div class="w-100"></div>
+        <div style="background-color:bisque" class="col-6">
+          <button id="admin-count-employees" type="button" class="btn btn-primary" data-target="#admin-count-employees-text" data-toggle="collapse">
+            Count Employees
+          </button>
+        </div>
+        <div style="background-color:bisque" class="col-6">
+          <div id="admin-count-employees-text" class="collapse" >
+          </div>
+        </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+  <script src="./app.js"></script>
 </body>
 </html>

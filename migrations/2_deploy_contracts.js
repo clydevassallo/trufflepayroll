@@ -1,16 +1,8 @@
 var EmployeeContractStorage = artifacts.require('./EmployeeContractStorage.sol');
-
 var ECRecovery = artifacts.require('./ECRecovery.sol');
-
 var Channel = artifacts.require('./OneTimeChannel.sol');
-
 var Ownable = artifacts.require('./Ownable.sol');
-
 var Payroll = artifacts.require('./Payroll.sol');
-
-
-
-
 
 module.exports = function (deployer) {
   deployer.deploy(EmployeeContractStorage)
@@ -27,5 +19,8 @@ module.exports = function (deployer) {
 
   deployer.deploy(Ownable);
 
-  deployer.deploy(Payroll);
+  deployer.deploy(EmployeeContractStorage)
+    .then(function() {
+      return deployer.deploy(Payroll, EmployeeContractStorage.address);
+    });
 }

@@ -32,9 +32,9 @@ contract Payroll is Ownable {
     }
 
     /* Constructor */
-    constructor() 
+    constructor(address _employeeContractStorageAddress) 
     public {
-
+        setEmployeeContractStorage(_employeeContractStorageAddress);
     }
     
 
@@ -72,9 +72,17 @@ contract Payroll is Ownable {
     }
 
     function hireEmployee(address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay)
-    public onlyOwner {
+    public onlyOwner 
+    returns (uint) {
         uint employeeId = getEmployeeContractStorage().createEmployeeContract(_incomeAccount, _hourlySalary, _maximumHoursPerDay);
         // raise event
+        return employeeId;
+    }
+
+    function countEmployees()
+    public view onlyOwner
+    returns (uint) {
+        return getEmployeeContractStorage().getNumberOfEmployees();
     }
 
     // Callable By Employee //
