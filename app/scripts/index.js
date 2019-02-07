@@ -102,7 +102,7 @@ const App = {
     Payroll.deployed().then(function (instance) {
       payroll = instance
       return payroll
-      .hireEmployee(employeeAccount, hourlySalary, maxHoursPerDay, 
+      .hireEmployee(employeeAccount, web3.toWei(hourlySalary, "ether"), maxHoursPerDay, 
         {from: web3.eth.accounts[0], gas:1000000}
       );
     }).then(function (value) {
@@ -213,7 +213,7 @@ const App = {
         console.log('Channel Address is ' + channelAddress);
         let message = abi.soliditySHA3(
             ["address", "uint256"],
-            [channelAddress, paymentValue]
+            [channelAddress, web3.toWei(paymentValue, "ether")]
         );
 
         let hash = "0x" + message.toString("hex");
@@ -325,7 +325,7 @@ const App = {
       console.log('Payee is ' + signerAndOpener[2]);
       console.log('Remaining Balance Wallet is ' + signerAndOpener[3]);
       return payroll
-      .punchOut(hash, signature, value, {from: web3.eth.accounts[0], gas:1000000});
+      .punchOut(hash, signature, web3.toWei(value, "ether"), {from: web3.eth.accounts[0], gas:1000000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
