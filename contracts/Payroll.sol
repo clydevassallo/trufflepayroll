@@ -15,7 +15,7 @@ contract Payroll is Ownable {
 
     mapping (address => OneTimeChannel) channels;
 
-    mapping (uint => bool) isEmployeePunchedIn;
+    mapping (address => uint) employeePunchInTime;
 
     event HiredEmployee (
         address indexed from,
@@ -50,25 +50,32 @@ contract Payroll is Ownable {
 
     /* Functions */       
 
-    // Callable By Owner //
+    // Callable By Everyone //
+
     function getOwner() 
     public view returns (address) {
         return owner;
     }
 
+    // Callable By Owner //
+
     function setEmployeeContractStorage(address _employeeContractStorageAddress) 
     public onlyOwner {
+        require(_employeeContractStorageAddress != address(0), "Given address is invalid. Points to 0x0.");
         employeeContractStorage = EmployeeContractStorage(_employeeContractStorageAddress);
     }
 
     function addFunds() 
     public onlyOwner payable {
-        // Emit event with balance update
+        // Used by the administrator to add funds to the payroll.
+        // The funds in this contract are considered as a pool to pay employees.
     }
 
-    function withdrawFunds() 
+    function withdrawFunds(uint amount) 
     public onlyOwner {
-        // Add withdraw pattern
+        // Administrator of the payroll can withdraw funds
+        require(amount <= this.balance);
+        msg.sender.transfer(amount);
     }
 
     function getBalance() 
@@ -77,26 +84,34 @@ contract Payroll is Ownable {
         return this.balance;
     }
 
-    function releaseChannel(uint _employeeId) 
+    function releaseChannel(address _employeeAddress) 
     public onlyOwner {
-        require (address(channels[employee]) != address(0));
+        require(_employeeAddress != address(0), "Given address is invalid. Points to 0x0.");
+        require(isEmployed(_employeeAddress), "Employee is not employed");
+        require(address(channels[_employeeAddress]) != address(0), "Channel for employee does not exist");
         
-        // Set employee as punched out, should be redundant but ensure that the state is not corrupted
-        if (isEmployeePunchedIn[_employeeId]) {
-            isEmployeePunchedIn[_employeeId] = false;
-        }
+        // Set employee as punched out, to allow future punchins
+        employeePunchInTime[_employeeAddress] = 0;
+        
+        // Attempt to timeout the channel, subject to expiration restriction
+        // All money will be sent to the Payroll contract
+        channels[_employeeAddress].timeOutChannel();
 
-        address employee = getEmployeeContractStorage().readEmployeeContractIncomeAccount(_employeeId);
-        channels[employee].timeOutChannel();
-        channels[employee] = OneTimeChannel(0);
+        // Point the channel for employee to 0x0
+        channels[_employeeAddress] = OneTimeChannel(0);
     }
 
     function hireEmployee(address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay)
     public onlyOwner 
     returns (uint) {
+        require(_incomeAccount != address(0), "Given address is invalid. Points to 0x0.");
+
+        // Create the employee in storage. Storage handles validation for duplicates
         uint employeeId = getEmployeeContractStorage().createEmployeeContract(_incomeAccount, _hourlySalary, _maximumHoursPerDay);
+
+        // Emit event to signal the creation of a new employee
         emit HiredEmployee(msg.sender, employeeId);
-        // raise event
+        
         return employeeId;
     }
 
@@ -112,9 +127,16 @@ contract Payroll is Ownable {
         return getEmployeeContractStorage().employeeExists(_employeeAddress);
     }
 
+    // Used when generating the hash and signature from front-end
+    // to end that the generated information can only be used on 
+    // this specific channel.
     function getEmployeeChannelAddress(address _employeeAddress) 
     public view onlyOwner
     returns (address) {
+        require(_employeeAddress != address(0), "Given address is invalid. Points to 0x0.");
+        require(isEmployed(_employeeAddress), "Employee is not employed");
+        require(address(channels[_employeeAddress]) != address(0), "Channel for employee does not exist");
+        
         address channelAddress = address(channels[_employeeAddress]);
         return channelAddress;
     }
@@ -122,69 +144,121 @@ contract Payroll is Ownable {
     // Callable By Employee //
 
     function punchIn() 
-    public {
-        // Get employee id
-        uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
+    public onlyEmployee {
+        // Get employeeAddress
+        address employeeAddress = msg.sender;
 
         // Ensure employee is not punched in and punch in
-        require(isEmployeePunchedIn[employeeId] == false);
-        isEmployeePunchedIn[employeeId] = true;
-
+        require(employeePunchInTime[employeeAddress] == 0, "Already punched in. Please punch out before punching in or ask the administrator to timeout your previous channel.");
+        
         // Ensure a channel does not already exist for this employee
-        require(channels[msg.sender] == OneTimeChannel(0), "A channel already exists. Probably a punch out was missed. Ask employer to timeout the channel.");
+        require(channels[employeeAddress] == OneTimeChannel(0), "A channel already exists. Probably a punch out was missed. Ask employer to timeout the channel.");
+        
+        /*
+            Get required information to validate and open channel
+        */
+
+        // Get employee id
+        uint employeeId = getEmployeeContractStorage().readEmployeeId(employeeAddress);
 
         // Get Salary Per Hour 
         uint employeeSalaryPerHour = getEmployeeContractStorage().readHourlySalary(employeeId);
 
         // Get Maximum Hours Per Day
         uint employeeMaximumHoursPerDay = getEmployeeContractStorage().readMaximumHoursPerDay(employeeId);
-
-        /*
-            Tricky Part: 
-             - Create a new channel in the map and transfer the maximum daily amount 
-               from this contract to the channel. (timeout should be 1 day)
-        */
-
-        // Try to get hours till end of day?
-        uint timeOutValue = 24 hours - (now / 24 hours);
-
+        
         // Calculate maximum salary for day
         uint employeeMaximumSalaryPerDay = employeeSalaryPerHour * employeeMaximumHoursPerDay;
 
+        // Ensure there is enough money in the payroll to pay the maximum salary
+        // TODO should add padding for costs?
+        require(this.balance >= employeeMaximumSalaryPerDay, "There is not enough money in the payroll. Contact your administrator");
+
+        // Set as punched in
+        // TODO should add check again under this if punched in to prevent reentrancy?
+        employeePunchInTime[employeeAddress] = now;
+        
+        /*
+            Create a new one time channel in the map and transfer the maximum daily amount 
+            from this contract to the channel.
+
+            The channel will have the following details: -
+            1) address channelOpener - The owner of the Payroll. This is used to verify signature
+                of messages and guard the timeout function.
+            2) address remainingBalanceWallet - The address of the Payroll contract. This will 
+                be used to return funds to this contract when the channel is closed 
+                or timed out.
+            3) address paymentReceiverWallet - The address of the Employee. This will be used when 
+                the channel is closed to pay the signed message value.
+            4) uint timeout - The timeout period which has to elapse in order for an employer to be
+                able to timeout the channel and prevent employee from locking funds. 
+        */
+
+        // Set expiration of channel 1 hour after the maximum allowed hours to give some leniency
+        uint timeoutValue = employeeMaximumHoursPerDay + 1 hours;
+
         // Open the payment channel
-        channels[msg.sender] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerDay)(owner, address(this), msg.sender, timeOutValue));    
+        channels[employeeAddress] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerDay)(owner, address(this), employeeAddress, timeoutValue));    
     }
 
-    function getChannelParties(bytes32 _hash, bytes _sig) 
+    function getChannelParties(bytes32 _hash, bytes _signature) 
     public view onlyEmployee
     returns (address,address,address,address) {
-        return channels[msg.sender].getChannelParties(_hash, _sig);
+        return channels[msg.sender].getChannelParties(_hash, _signature);
     }
 
     function punchOut(bytes32 _hash, bytes _signature, uint _value) 
     public onlyEmployee {
-        // Get employee id
-        uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
+        // Get employeeAddress
+        address employeeAddress = msg.sender;
 
         // Ensure employee is punched in and punch out
-        require(isEmployeePunchedIn[employeeId] == true);
-        isEmployeePunchedIn[employeeId] = false;
+        // TODO check for reentrancy
+        require(employeePunchInTime[employeeAddress] != 0);
 
-        emit PunchOut(msg.sender, _hash, _signature, _value);
+        // Consider punch in and current time compared to max value
+        uint currentTime = now;
+        uint punchInTime = employeePunchInTime[employeeAddress];
+        uint punchedInSeconds = now - punchInTime;
+        uint punchedInHours = punchedInSeconds / 1 hours;
 
-        channels[msg.sender].closeChannel(_hash, _signature, _value);
-        channels[msg.sender] = OneTimeChannel(0);
+        // Set employee punch in time to 0 to indicate punched out
+        employeePunchInTime[employeeAddress] = 0;
+
+        // Get employee id
+        uint employeeId = getEmployeeContractStorage().readEmployeeId(employeeAddress);
+
+        // Get Salary Per Hour 
+        uint employeeSalaryPerHour = getEmployeeContractStorage().readHourlySalary(employeeId);
+
+        // Calculate Maximum Salary
+        // HourlySalary * (HoursWorked + 1)) + HalfHourlySalary
+        // The (+ 1) in hours worked is added to account for the loss in precision of the punchedInHours calculation
+        // The (+ HalfHourlySalary) was added to account for the lack of precision in the 'now' (+-900s)
+        // Note: The employer is very lenient with this calculation
+        uint maximumSalary = (employeeSalaryPerHour * (punchedInHours + 1)) + (employeeSalaryPerHour / 2);
+
+        // Validate value
+        require(_value <= maximumSalary, "The amount being claimed with punch out is higher than the maximum salary for the session. Ask employer to issue another signed managed with the correct salary if not available.");
+        
+        // Attempt to close the channel 
+        channels[employeeAddress].closeChannel(_hash, _signature, _value);
+        channels[employeeAddress] = OneTimeChannel(0);
+
+        emit PunchOut(employeeAddress, _hash, _signature, _value);
     }
 
     function isPunchedIn() 
-    public view 
+    public view onlyEmployee
     returns (bool) {
-        uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
-        return isEmployeePunchedIn[employeeId];
+        // Get employeeAddress
+        address employeeAddress = msg.sender;
+        
+        return employeePunchInTime[employeeAddress] > 0;
     }
 
     function getEmployeeId() 
-    public view
+    public view onlyEmployee
     returns (uint) {
         uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
         return employeeId;

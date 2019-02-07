@@ -217,8 +217,7 @@ const App = {
         );
 
         let hash = "0x" + message.toString("hex");
-        console.log('hash is ' + hash); 
-        
+            
         web3.eth.sign(
           web3.eth.accounts[0],
           hash,
@@ -227,50 +226,21 @@ const App = {
             if (!error)
             { 
               console.log('No Error in web3ethsign hash!');
-              console.log('Result is ' + result);
+              console.log('Signature is ' + result);
+              Swal.fire({
+                position: 'top-end',
+                type: 'success',
+                title: 'Successfully Generated Signature',
+                text: 'Hash: ' + hash + '. Signature: ' + result,
+                showConfirmButton: true,
+                width: 500
+              });
             } else {
               console.log('Error is ' + error);
             }
             console.log('--------------------------------------------------')
-            // Swal.fire({
-            //   position: 'top-end',
-            //   type: 'success',
-            //   title: 'Successfully Generated Signature',
-            //   text: 'Hash: ' + hash,
-            //   signature: 'Signature: ' + signature,
-            //   showConfirmButton: true,
-            //   timer: 1500,
-            //   width: 500
-            // });
           }
         );
-
-        // web3.personal.sign(
-        //   hash,
-        //   web3.eth.accounts[0],
-        //   function (error, result) {
-        //     console.log('-------------- web3personalsign hash --------------')
-        //     if (!error)
-        //     { 
-        //       console.log('No Error in web3personalsign hash!');
-        //       console.log('Result is ' + result);
-        //     } else {
-        //       console.log('Error is ' + error);
-        //     }
-        //     console.log('--------------------------------------------------') 
-        //     // Swal.fire({
-        //     //   position: 'top-end',
-        //     //   type: 'success',
-        //     //   title: 'Successfully Generated Signature',
-        //     //   text: 'Hash: ' + hash,
-        //     //   signature: 'Signature: ' + signature,
-        //     //   showConfirmButton: true,
-        //     //   timer: 1500,
-        //     //   width: 500
-        //     // });
-        //   }
-        // );
-
       } else {
         Swal.fire({
           position: 'top-end',
@@ -281,6 +251,33 @@ const App = {
           width: 300
         });
       }
+    })
+  },
+
+  timeoutChannel: function(walletAddress) {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance;
+      return payroll.releaseChannel(walletAddress, {from: web3.eth.accounts[0], gas:1000000});
+    }).then(function (value) {
+      Swal.fire({
+        position: 'top-end',
+        type: 'success',
+        title: 'Channel was successfully timed out!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
+    }).catch(function (e) {
+      console.log(e);
+      Swal.fire({
+        position: 'top-end',
+        type: 'error',
+        title: 'Failed to time out channel!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
     })
   },
 
@@ -434,6 +431,16 @@ $('#admin-generate-signature-form').on('submit', function (e) {
   console.log(paymentValue);
 
   App.generateHashAndSignature(payeeAddress, paymentValue);
+})
+
+$('#admin-timeout-channel-form').on('submit', function (e) {
+  e.preventDefault();
+
+  let walletAddress = $('#timeout-channel-employee-wallet-address').val();
+
+  console.log(walletAddress);
+
+  App.timeoutChannel(walletAddress);
 })
 
 /* Employee Event Listeners */

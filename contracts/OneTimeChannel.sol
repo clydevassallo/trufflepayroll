@@ -10,10 +10,10 @@ contract OneTimeChannel {
     uint expirationDate;
     mapping (bytes32 => address) signatures;
     
-    constructor (address _employer, address _remainingBalanceWallet, address _paymentReceiverWallet, 
+    constructor (address _opener, address _remainingBalanceWallet, address _paymentReceiverWallet, 
                 uint _timeout) 
     public payable {
-        channelOpener = _employer;
+        channelOpener = _opener;
         remainingBalanceWallet = _remainingBalanceWallet;
         paymentReceiverWallet = _paymentReceiverWallet;
         expirationDate = now + _timeout;
@@ -23,7 +23,6 @@ contract OneTimeChannel {
     // v used to check which account's private key was used to sign the message, and the transaction's sender
     function closeChannel(bytes32 _hash, bytes _sig, uint value) 
     public payable {
-        
         address signer;
         bytes32 proof;
 
@@ -31,14 +30,16 @@ contract OneTimeChannel {
         signer = getSignerFromHashAndSig(_hash, _sig);
         
         // signature is invalid, throw
-        require (signer == channelOpener, "Message can only be signer by the channel opener.");
+        require(signer == channelOpener, "Message can only be signer by the channel opener.");
 
         // was "proof = sha3(this, value);"
         proof = keccak256(abi.encodePacked(this, value));
 
         // signature is valid but doesn't match the data provided
-        require (proof == _hash, "Signature was correct but the value being withdraw does not match that specified by the signer.");
+        require(proof == _hash, "Signature was correct but the value being withdraw does not match that specified by the signer.");
         
+        require(value <= this.balance, "Requested value is greater than this channel's balance");
+
         paymentReceiverWallet.transfer(value);
         selfdestruct(remainingBalanceWallet);
     }
