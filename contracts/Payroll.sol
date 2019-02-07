@@ -147,6 +147,13 @@ contract Payroll is Ownable {
         channels[msg.sender] = OneTimeChannel(0);
     }
 
+    function isPunchedIn() 
+    public view onlyEmployee 
+    returns (bool) {
+        uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
+        return isEmployeePunchedIn[employeeId];
+    }
+
     /* Private functions */
 
     function getEmployeeContractStorage() 

@@ -44,6 +44,7 @@ const App = {
     })
   },
 
+  /* Administration */ 
   hireEmployee: function (employeeAccount, hourlySalary, maxHoursPerDay) {
     let payroll
     Payroll.deployed().then(function (instance) {
@@ -147,8 +148,55 @@ const App = {
         width: 300
       });
     })  
+  },
+
+  /* Employees */ 
+
+  punchIn: function() {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll
+      .punchIn({from: account});
+    }).then(function (value) {
+      Swal.fire({
+        position: 'top-end',
+        type: 'success',
+        title: 'You were successfully punched in!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
+    }).catch(function (e) {
+      console.log(e);
+      Swal.fire({
+        position: 'top-end',
+        type: 'error',
+        title: 'Failed to punch in!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
+    })
+  },
+
+  punchOut: function(hash, signature) {
+
+  },
+
+  amIPunchedIn: function() {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll
+      .isPunchedIn.call();
+    }).then(function (isPunchedIn) {
+      $('#employee-is-punched-in-text').text('Am I Punched In? ' + isPunchedIn);
+    });
   }
 }
+
+/* Administration Event Listeners */
 
 $('#admin-hire-employee').on('click', function (e) {
   console.log("CLICKED HIRE EMPLOYEE");
@@ -200,6 +248,13 @@ $('#admin-deposit-payroll-form').on('submit', function (e) {
   App.depositInPayroll(amountToDeposit);
 })
 
+/* Employee Event Listeners */
+
+$('#employee-is-punched-in-text').on('show.bs.collapse', function(e) {
+  App.amIPunchedIn();
+})
+
+/* Windows Event Listeners and Initialization */ 
 
 window.App = App
 
