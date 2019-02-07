@@ -5,8 +5,6 @@ var Ownable = artifacts.require('./Ownable.sol');
 var Payroll = artifacts.require('./Payroll.sol');
 
 module.exports = function (deployer) {
-  deployer.deploy(EmployeeContractStorage)
-
   deployer.deploy(ECRecovery);
   // deployer.link(ECRecovery, Channel);
 

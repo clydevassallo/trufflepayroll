@@ -16,10 +16,9 @@ const Payroll = contract(payrollArtifact)
 // The following code is simple to show off interacting with your contracts.
 // As your needs grow you will likely need to change its form and structure.
 // For application bootstrapping, check out window.addEventListener below.
-let accounts
-let account
 
 const App = {
+  
   start: function () {
     const self = this
 
@@ -27,21 +26,40 @@ const App = {
     EmployeeContractStorage.setProvider(web3.currentProvider);
     Payroll.setProvider(web3.currentProvider);
 
-    // Get the initial account balance so it can be displayed.
-    web3.eth.getAccounts(function (err, accs) {
-      if (err != null) {
-        alert('There was an error fetching your accounts.')
-        return
-      }
+    setTimeout(() => {
+      web3.eth.getAccounts((err, accs) => {
+        if (err != null) {
+          alert('There was an error fetching your accounts.')
+          return
+        }
+  
+        if (accs.length === 0) {
+          alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.")
+          return
+        }
+  
+        App.accounts = accs; 
+        App.account = App.accounts[0];
+      })
+    }, 1000)
 
-      if (accs.length === 0) {
-        alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.")
-        return
+    setInterval(function() {
+      if (web3.eth.accounts[0] !== App.account) {
+        App.account = web3.eth.accounts[0];
+        window.location.reload();
       }
-
-      accounts = accs;
-      account = accounts[0];
-    })
+    }, 2000);
+    console.log('beep ' + JSON.stringify(EmployeeContractStorage));
+    EmployeeContractStorage.allEvents().watch(function(error, result){
+      if (!error)
+        {
+          alert(result);
+          alert(result.args.hourlySalary.toNumber());
+        } else {
+          alert(error);
+        }
+    }); 
+    
   },
 
   /* Administration */ 
@@ -51,7 +69,7 @@ const App = {
       payroll = instance
       return payroll
       .hireEmployee(employeeAccount, hourlySalary, maxHoursPerDay, 
-        {from: account}
+        {from: web3.eth.accounts[0], gas:1000000}
       );
     }).then(function (value) {
       Swal.fire({
@@ -127,7 +145,7 @@ const App = {
     let payroll
     Payroll.deployed().then(function (instance) {
       payroll = instance
-      return payroll.addFunds({from: account, value: web3.toWei(amountToDeposit, "ether")});
+      return payroll.addFunds({from: web3.eth.accounts[0], value: web3.toWei(amountToDeposit, "ether"), gas:1000000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
@@ -157,7 +175,7 @@ const App = {
     Payroll.deployed().then(function (instance) {
       payroll = instance
       return payroll
-      .punchIn({from: account});
+      .punchIn({from: web3.eth.accounts[0], gas:1000000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
@@ -192,6 +210,17 @@ const App = {
       .isPunchedIn.call();
     }).then(function (isPunchedIn) {
       $('#employee-is-punched-in-text').text('Am I Punched In? ' + isPunchedIn);
+    });
+  },
+
+  getMyId: function() {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll
+      .getEmployeeId.call();
+    }).then(function (employeeId) {
+      $('#employee-get-my-id-text').text('Employee Id is ' + employeeId);
     });
   }
 }
@@ -250,8 +279,18 @@ $('#admin-deposit-payroll-form').on('submit', function (e) {
 
 /* Employee Event Listeners */
 
+
 $('#employee-is-punched-in-text').on('show.bs.collapse', function(e) {
   App.amIPunchedIn();
+})
+
+$('#employee-punch-in').on('click', function (e) {
+  console.log("Punching in....");
+  App.punchIn();
+})
+
+$('#employee-get-my-id-text').on('show.bs.collapse', function(e) {
+  App.getMyId();
 })
 
 /* Windows Event Listeners and Initialization */ 

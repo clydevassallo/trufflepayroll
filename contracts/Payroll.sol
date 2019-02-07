@@ -58,7 +58,7 @@ contract Payroll is Ownable {
     }
 
     function getBalance() 
-    public view
+    public view onlyOwner
     returns (uint) {
         return this.balance;
     }
@@ -100,7 +100,7 @@ contract Payroll is Ownable {
     // Callable By Employee //
 
     function punchIn() 
-    public onlyEmployee {
+    public {
         // Get employee id
         uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
 
@@ -148,10 +148,17 @@ contract Payroll is Ownable {
     }
 
     function isPunchedIn() 
-    public view onlyEmployee 
+    public view 
     returns (bool) {
         uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
         return isEmployeePunchedIn[employeeId];
+    }
+
+    function getEmployeeId() 
+    public view
+    returns (uint) {
+        uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
+        return employeeId;
     }
 
     /* Private functions */
