@@ -6,14 +6,8 @@ var Payroll = artifacts.require('./Payroll.sol');
 
 module.exports = function (deployer) {
   deployer.deploy(ECRecovery);
-  // deployer.link(ECRecovery, Channel);
-
-  // deployer.deploy(Channel)
-
+  
   deployer.link(ECRecovery, Payroll);
-
-  // deployer.link(EmployeeContractStorage, Payroll);
-  // deployer.link(Channel, Payroll)
 
   deployer.deploy(EmployeeContractStorage)
     .then(function() {

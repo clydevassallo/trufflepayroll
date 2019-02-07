@@ -53,7 +53,7 @@ const App = {
 
     EmployeeContractStorage.deployed().then(function (instance) {
       let employeeContractStorage = instance
-      employeeContractStorage.EmployeeContractCreation().watch(function(error, result){
+      employeeContractStorage.EmployeeContractCreation({fromBlock: 'latest'}).watch(function(error, result){
         if (!error)
         {
           console.log('No Error in EmployeeContractCreation Event!');
