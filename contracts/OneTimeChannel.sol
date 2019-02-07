@@ -23,7 +23,7 @@ contract OneTimeChannel {
     // v used to check which account's private key was used to sign the message, and the transaction's sender
     function closeChannel(bytes32 _hash, bytes _sig, uint value) 
     public payable {
-        /*
+        
         address signer;
         bytes32 proof;
 
@@ -31,15 +31,14 @@ contract OneTimeChannel {
         signer = getSignerFromHashAndSig(_hash, _sig);
         
         // signature is invalid, throw
-        require (signer == channelOpener, "Message can only be signer by the channel opener");
+        require (signer == channelOpener, "Message can only be signer by the channel opener.");
 
         // was "proof = sha3(this, value);"
         proof = keccak256(abi.encodePacked(this, value));
 
         // signature is valid but doesn't match the data provided
         require (proof == _hash, "Signature was correct but the value being withdraw does not match that specified by the signer.");
-        */
-
+        
         paymentReceiverWallet.transfer(value);
         selfdestruct(remainingBalanceWallet);
     }
@@ -56,6 +55,12 @@ contract OneTimeChannel {
     private 
     returns (address) {
         return ECRecovery.recover(_hash,_sig);
+    }
+
+    function getChannelParties(bytes32 _hash, bytes _sig) 
+    public 
+    returns (address,address,address,address) {
+        return (ECRecovery.recover(_hash,_sig),channelOpener,paymentReceiverWallet,remainingBalanceWallet);
     }
 
 }

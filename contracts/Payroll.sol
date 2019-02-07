@@ -13,8 +13,6 @@ contract Payroll is Ownable {
 
     EmployeeContractStorage public employeeContractStorage;
 
-    address owner;
-
     mapping (address => OneTimeChannel) channels;
 
     mapping (uint => bool) isEmployeePunchedIn;
@@ -53,6 +51,10 @@ contract Payroll is Ownable {
     /* Functions */       
 
     // Callable By Owner //
+    function getOwner() 
+    public view returns (address) {
+        return owner;
+    }
 
     function setEmployeeContractStorage(address _employeeContractStorageAddress) 
     public onlyOwner {
@@ -153,6 +155,12 @@ contract Payroll is Ownable {
         channels[msg.sender] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerDay)(owner, address(this), msg.sender, timeOutValue));    
     }
 
+    function getChannelParties(bytes32 _hash, bytes _sig) 
+    public view onlyEmployee
+    returns (address,address,address,address) {
+        return channels[msg.sender].getChannelParties(_hash, _sig);
+    }
+
     function punchOut(bytes32 _hash, bytes _signature, uint _value) 
     public onlyEmployee {
         // Get employee id
@@ -191,8 +199,8 @@ contract Payroll is Ownable {
     }
 
     // default fn
-    function() public {
-        revert("Please use a valid method");
+    function() public payable {
+        
     }
 
 }

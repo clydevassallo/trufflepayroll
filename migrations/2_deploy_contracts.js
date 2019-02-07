@@ -15,8 +15,6 @@ module.exports = function (deployer) {
   // deployer.link(EmployeeContractStorage, Payroll);
   // deployer.link(Channel, Payroll)
 
-  deployer.deploy(Ownable);
-
   deployer.deploy(EmployeeContractStorage)
     .then(function() {
       return deployer.deploy(Payroll, EmployeeContractStorage.address);

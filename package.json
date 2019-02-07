@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "chai": "^4.2.0",
+    "ethereumjs-abi": "^0.6.6",
     "gulp": "^3.9.0",
     "truffle-assertions": "^0.7.2"
   }

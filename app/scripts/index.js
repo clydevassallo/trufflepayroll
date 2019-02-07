@@ -4,6 +4,7 @@ import '../styles/app.css'
 // Import libraries we need.
 import { default as Web3 } from 'web3'
 import { default as contract } from 'truffle-contract'
+import { default as Abi } from 'ethereumjs-abi'
 
 // Import our contract artifacts and turn them into usable abstractions.
 import employeeStorageArtifact from '../../build/contracts/EmployeeContractStorage.json'
@@ -54,17 +55,21 @@ const App = {
       let employeeContractStorage = instance
       employeeContractStorage.EmployeeContractCreation().watch(function(error, result){
         if (!error)
-          {
-            console.log('No Error in EmployeeContractCreation Event!');
-            console.log(result);
-          } else {
-            console.err(error);
-          }
+        {
+          console.log('No Error in EmployeeContractCreation Event!');
+          console.log(result);
+        } else {
+          console.err(error);
+        }
       }); 
     });
 
+    let payroll;
     Payroll.deployed().then(function (instance) {
-      let payroll = instance
+      payroll = instance
+      return payroll.getOwner.call({from: web3.eth.accounts[0], gas:1000000})
+    }).then(function (owner) {
+      console.log('Owner of payroll is ' + owner);
       payroll.HiredEmployee().watch(function(error, result){
         if (!error)
           {
@@ -197,6 +202,88 @@ const App = {
     })  
   },
 
+  generateHashAndSignature: function(employeeAddress, paymentValue) {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll.getEmployeeChannelAddress.call(employeeAddress);
+    }).then(function (channelAddress) {
+      if (channelAddress) {
+        // Generate hash and signature from address and value
+        console.log('Channel Address is ' + channelAddress);
+        let message = abi.soliditySHA3(
+            ["address", "uint256"],
+            [channelAddress, paymentValue]
+        );
+
+        let hash = "0x" + message.toString("hex");
+        console.log('hash is ' + hash); 
+        
+        web3.eth.sign(
+          web3.eth.accounts[0],
+          hash,
+          function (error, result) {
+            console.log('-------------- web3ethsign hash --------------')
+            if (!error)
+            { 
+              console.log('No Error in web3ethsign hash!');
+              console.log('Result is ' + result);
+            } else {
+              console.log('Error is ' + error);
+            }
+            console.log('--------------------------------------------------')
+            // Swal.fire({
+            //   position: 'top-end',
+            //   type: 'success',
+            //   title: 'Successfully Generated Signature',
+            //   text: 'Hash: ' + hash,
+            //   signature: 'Signature: ' + signature,
+            //   showConfirmButton: true,
+            //   timer: 1500,
+            //   width: 500
+            // });
+          }
+        );
+
+        // web3.personal.sign(
+        //   hash,
+        //   web3.eth.accounts[0],
+        //   function (error, result) {
+        //     console.log('-------------- web3personalsign hash --------------')
+        //     if (!error)
+        //     { 
+        //       console.log('No Error in web3personalsign hash!');
+        //       console.log('Result is ' + result);
+        //     } else {
+        //       console.log('Error is ' + error);
+        //     }
+        //     console.log('--------------------------------------------------') 
+        //     // Swal.fire({
+        //     //   position: 'top-end',
+        //     //   type: 'success',
+        //     //   title: 'Successfully Generated Signature',
+        //     //   text: 'Hash: ' + hash,
+        //     //   signature: 'Signature: ' + signature,
+        //     //   showConfirmButton: true,
+        //     //   timer: 1500,
+        //     //   width: 500
+        //     // });
+        //   }
+        // );
+
+      } else {
+        Swal.fire({
+          position: 'top-end',
+          type: 'error',
+          title: 'Failed to get employee channel address',
+          showConfirmButton: false,
+          timer: 1500,
+          width: 300
+        });
+      }
+    })
+  },
+
   /* Employees */ 
 
   punchIn: function() {
@@ -228,9 +315,15 @@ const App = {
   },
 
   punchOut: function(hash, signature, value) {
-    let payroll
+  let payroll
     Payroll.deployed().then(function (instance) {
       payroll = instance
+      return payroll.getChannelParties.call(hash, signature, {from: web3.eth.accounts[0], gas:1000000});
+    }).then(function (signerAndOpener) {  
+      console.log('Signer is ' + signerAndOpener[0]);
+      console.log('Opener is ' + signerAndOpener[1]);
+      console.log('Payee is ' + signerAndOpener[2]);
+      console.log('Remaining Balance Wallet is ' + signerAndOpener[3]);
       return payroll
       .punchOut(hash, signature, value, {from: web3.eth.accounts[0], gas:1000000});
     }).then(function (value) {
@@ -331,6 +424,18 @@ $('#admin-deposit-payroll-form').on('submit', function (e) {
   App.depositInPayroll(amountToDeposit);
 })
 
+$('#admin-generate-signature-form').on('submit', function (e) {
+  e.preventDefault();
+
+  let payeeAddress = $('#employee-payee-address').val();
+  let paymentValue = $('#employee-payee-value').val();
+
+  console.log(payeeAddress);
+  console.log(paymentValue);
+
+  App.generateHashAndSignature(payeeAddress, paymentValue);
+})
+
 /* Employee Event Listeners */
 
 $('#employee-is-punched-in-text').on('show.bs.collapse', function(e) {
@@ -389,6 +494,8 @@ window.addEventListener('load', function () {
     // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
     window.web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:7545'))
   }
+
+  window.abi = Abi;
 
   App.start()
   

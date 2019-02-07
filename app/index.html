@@ -84,10 +84,29 @@
         <div style="background-color:bisque" class="col-6">
             <form id="admin-deposit-payroll-form" class="collapse" >
               <div class="form-group">
-                <label for="amount-to-deposit">Potential Employee Address</label>
+                <label for="amount-to-deposit">Amount to deposit in ether</label>
                 <input id="amount-to-deposit" type="number" class="form-control" placeholder="Enter amount to deposit in ether">
               </div>
               <button id="admin-deposit-payroll-submit" type="submit" class="btn btn-primary">Submit</button>
+            </form>  
+        </div>
+        <div class="w-100"></div>
+        <div style="background-color:bisque" class="col-6">
+            <button id="admin-generate-signature" type="button" class="btn btn-primary" data-target="#admin-generate-signature-form" data-toggle="collapse">
+              Generate Hash and Signature
+            </button>
+        </div>
+        <div style="background-color:bisque" class="col-6">
+            <form id="admin-generate-signature-form" class="collapse" >
+              <div class="form-group">
+                <label for="employee-payee-address">Employee To Pay Address</label>
+                <input id="employee-payee-address" type="text" class="form-control" placeholder="Enter address of employee to pay">
+              </div>
+              <div class="form-group">
+                  <label for="employee-payee-value">Payment Value</label>
+                  <input id="employee-payee-value" type="number" class="form-control" placeholder="Enter amount to pay">
+                </div>
+              <button id="admin-generate-signature-submit" type="submit" class="btn btn-primary">Submit</button>
             </form>  
         </div>
     </div>
