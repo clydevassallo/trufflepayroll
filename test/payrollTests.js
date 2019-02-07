@@ -23,12 +23,23 @@ contract('Payroll', function (accounts) {
             payroll = instance;
             return payroll.getBalance.call();
         }).then(function(balance) {
-            initialBalance = balance
+            initialBalance = balance;
+
+            // Deposit
             return payroll.addFunds({value: 100});
         }).then(function() {
             return payroll.getBalance.call();
         }).then(function(balance) {
+            // Check balance
             assert.equal(Number(initialBalance) + 100, balance);
+
+            // Withdraw
+            return payroll.withdrawFunds(50);
+        }).then(function() {
+            return payroll.getBalance.call();
+        }).then(function(balance){
+            // Check balance
+            assert.equal(Number(initialBalance) + 50, balance);
         });
     });
 });
