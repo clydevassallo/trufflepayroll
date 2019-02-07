@@ -19,6 +19,18 @@ contract Payroll is Ownable {
 
     mapping (uint => bool) isEmployeePunchedIn;
 
+    event HiredEmployee (
+        address indexed from,
+        uint employeeId
+    );
+
+    event PunchOut (
+        address indexed from,
+        bytes32 _hash,
+        bytes signature,
+        uint value
+    );
+
     /* Function Modifiers */
 
     modifier onlyEmployee() {
@@ -81,6 +93,7 @@ contract Payroll is Ownable {
     public onlyOwner 
     returns (uint) {
         uint employeeId = getEmployeeContractStorage().createEmployeeContract(_incomeAccount, _hourlySalary, _maximumHoursPerDay);
+        emit HiredEmployee(msg.sender, employeeId);
         // raise event
         return employeeId;
     }
@@ -95,6 +108,13 @@ contract Payroll is Ownable {
     public view onlyOwner 
     returns (bool) {
         return getEmployeeContractStorage().employeeExists(_employeeAddress);
+    }
+
+    function getEmployeeChannelAddress(address _employeeAddress) 
+    public view onlyOwner
+    returns (address) {
+        address channelAddress = address(channels[_employeeAddress]);
+        return channelAddress;
     }
 
     // Callable By Employee //
@@ -130,10 +150,10 @@ contract Payroll is Ownable {
         uint employeeMaximumSalaryPerDay = employeeSalaryPerHour * employeeMaximumHoursPerDay;
 
         // Open the payment channel
-        channels[msg.sender] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerDay)(address(this), msg.sender, timeOutValue));    
+        channels[msg.sender] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerDay)(owner, address(this), msg.sender, timeOutValue));    
     }
 
-    function punchOut(bytes32 _hash, bytes _signature) 
+    function punchOut(bytes32 _hash, bytes _signature, uint _value) 
     public onlyEmployee {
         // Get employee id
         uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
@@ -142,8 +162,9 @@ contract Payroll is Ownable {
         require(isEmployeePunchedIn[employeeId] == true);
         isEmployeePunchedIn[employeeId] = false;
 
-        uint value = 10; // should this be the calculation based on rate?
-        channels[msg.sender].closeChannel(_hash, _signature, value);
+        emit PunchOut(msg.sender, _hash, _signature, _value);
+
+        channels[msg.sender].closeChannel(_hash, _signature, _value);
         channels[msg.sender] = OneTimeChannel(0);
     }
 
@@ -164,7 +185,7 @@ contract Payroll is Ownable {
     /* Private functions */
 
     function getEmployeeContractStorage() 
-    private externalStorageSet
+    private view externalStorageSet
     returns (EmployeeContractStorage) {
         return employeeContractStorage;
     }

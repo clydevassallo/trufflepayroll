@@ -49,16 +49,45 @@ const App = {
         window.location.reload();
       }
     }, 2000);
-    console.log('beep ' + JSON.stringify(EmployeeContractStorage));
-    EmployeeContractStorage.allEvents().watch(function(error, result){
-      if (!error)
-        {
-          alert(result);
-          alert(result.args.hourlySalary.toNumber());
-        } else {
-          alert(error);
-        }
-    }); 
+
+    EmployeeContractStorage.deployed().then(function (instance) {
+      let employeeContractStorage = instance
+      employeeContractStorage.EmployeeContractCreation().watch(function(error, result){
+        if (!error)
+          {
+            console.log('No Error in EmployeeContractCreation Event!');
+            console.log(result);
+          } else {
+            console.err(error);
+          }
+      }); 
+    });
+
+    Payroll.deployed().then(function (instance) {
+      let payroll = instance
+      payroll.HiredEmployee().watch(function(error, result){
+        if (!error)
+          {
+            console.log('No Error in HiredEmployee Event!');
+            console.log(result);
+          } else {
+            console.err(error);
+          }
+      }); 
+    });
+
+    Payroll.deployed().then(function (instance) {
+      let payroll = instance
+      payroll.PunchOut().watch(function(error, result){
+        if (!error)
+          {
+            console.log('No Error in PunchOut Event!');
+            console.log(result);
+          } else {
+            console.err(error);
+          }
+      }); 
+    });
     
   },
 
@@ -198,8 +227,32 @@ const App = {
     })
   },
 
-  punchOut: function(hash, signature) {
-
+  punchOut: function(hash, signature, value) {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll
+      .punchOut(hash, signature, value, {from: web3.eth.accounts[0], gas:1000000});
+    }).then(function (value) {
+      Swal.fire({
+        position: 'top-end',
+        type: 'success',
+        title: 'You were successfully punched out!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
+    }).catch(function (e) {
+      console.log(e);
+      Swal.fire({
+        position: 'top-end',
+        type: 'error',
+        title: 'Failed to punch out!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
+    })
   },
 
   amIPunchedIn: function() {
@@ -207,7 +260,7 @@ const App = {
     Payroll.deployed().then(function (instance) {
       payroll = instance
       return payroll
-      .isPunchedIn.call();
+      .isPunchedIn.call({from: web3.eth.accounts[0]});
     }).then(function (isPunchedIn) {
       $('#employee-is-punched-in-text').text('Am I Punched In? ' + isPunchedIn);
     });
@@ -218,8 +271,9 @@ const App = {
     Payroll.deployed().then(function (instance) {
       payroll = instance
       return payroll
-      .getEmployeeId.call();
+      .getEmployeeId.call({from: web3.eth.accounts[0]});
     }).then(function (employeeId) {
+      console.log(employeeId);
       $('#employee-get-my-id-text').text('Employee Id is ' + employeeId);
     });
   }
@@ -279,7 +333,6 @@ $('#admin-deposit-payroll-form').on('submit', function (e) {
 
 /* Employee Event Listeners */
 
-
 $('#employee-is-punched-in-text').on('show.bs.collapse', function(e) {
   App.amIPunchedIn();
 })
@@ -291,6 +344,22 @@ $('#employee-punch-in').on('click', function (e) {
 
 $('#employee-get-my-id-text').on('show.bs.collapse', function(e) {
   App.getMyId();
+})
+
+$('#employee-punch-out-form').on('submit', function (e) {
+  e.preventDefault();
+
+  /* ====================== Call Solidity Hire Employee ======================= */
+  /* data: address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay */
+  let hash = $('#employee-punch-out-hash').val();
+  let signature = $('#employee-punch-out-signature').val();
+  let value = $('#employee-punch-out-value').val();
+
+  console.log(hash);
+  console.log(signature);
+  console.log(value);
+
+  App.punchOut(hash, signature, value);
 })
 
 /* Windows Event Listeners and Initialization */ 

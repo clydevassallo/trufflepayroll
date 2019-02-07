@@ -10,12 +10,10 @@ contract OneTimeChannel {
     uint expirationDate;
     mapping (bytes32 => address) signatures;
     
-    constructor (address _remainingBalanceWallet, address _paymentReceiverWallet, 
+    constructor (address _employer, address _remainingBalanceWallet, address _paymentReceiverWallet, 
                 uint _timeout) 
     public payable {
-
-        channelOpener = msg.sender;
-
+        channelOpener = _employer;
         remainingBalanceWallet = _remainingBalanceWallet;
         paymentReceiverWallet = _paymentReceiverWallet;
         expirationDate = now + _timeout;
@@ -25,7 +23,7 @@ contract OneTimeChannel {
     // v used to check which account's private key was used to sign the message, and the transaction's sender
     function closeChannel(bytes32 _hash, bytes _sig, uint value) 
     public payable {
-
+        /*
         address signer;
         bytes32 proof;
 
@@ -40,6 +38,7 @@ contract OneTimeChannel {
 
         // signature is valid but doesn't match the data provided
         require (proof == _hash, "Signature was correct but the value being withdraw does not match that specified by the signer.");
+        */
 
         paymentReceiverWallet.transfer(value);
         selfdestruct(remainingBalanceWallet);
