@@ -15,7 +15,7 @@ contract('Payroll', function (accounts) {
         });
     });
 
-    it('should update the balance', function() {
+    it('should manage the balance', function() {
         let initialBalance;
         return Payroll
         .deployed()
@@ -40,6 +40,22 @@ contract('Payroll', function (accounts) {
         }).then(function(balance){
             // Check balance
             assert.equal(Number(initialBalance) + 50, balance);
+        });
+    });
+
+    it('should not allow employees to punch in with insufficient balance', function() {
+        return Payroll
+        .deployed()
+        .then(function (instance) {
+            payroll = instance;
+            return payroll.hireEmployee(accounts[3], 10, 8);
+        }).then(function() {
+            return payroll.punchIn({from: accounts[3]});
+        }).then(function() {
+            assert.equal(true,false,"PunchIn should have failed with insufficient balance but didn't");
+        }).catch(function(e) {
+            let errorMessage = e.message;
+            assert.equal(true, errorMessage.includes('not enough money'));
         });
     });
 });
