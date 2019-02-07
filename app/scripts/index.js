@@ -62,6 +62,7 @@ const App = {
         width: 300
       });
     }).catch(function (e) {
+      console.log(e);
       Swal.fire({
         position: 'top-end',
         type: 'error',
@@ -117,8 +118,35 @@ const App = {
       payroll = instance
       return payroll.getBalance.call();
     }).then(function (balance) {
-      $('#admin-get-payroll-balance-text').text('Payroll Balance: ' + balance);
+      $('#admin-get-payroll-balance-text').text('Payroll Balance: ' + web3.fromWei(balance,"ether") + ' ETH');
     })
+  },
+
+  depositInPayroll: function(amountToDeposit) {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll.addFunds({from: account, value: web3.toWei(amountToDeposit, "ether")});
+    }).then(function (value) {
+      Swal.fire({
+        position: 'top-end',
+        type: 'success',
+        title: 'Funds were successfully added!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
+    }).catch(function (e) {
+      console.log(e);
+      Swal.fire({
+        position: 'top-end',
+        type: 'error',
+        title: 'Failed to add funds!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
+    })  
   }
 }
 
@@ -151,8 +179,6 @@ $('#admin-count-employees-text').on('show.bs.collapse', function(e) {
 $('#admin-is-employed-form').on('submit', function (e) {
   e.preventDefault();
 
-  /* ====================== Call Solidity Hire Employee ======================= */
-  /* data: address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay */
   let walletAddress = $('#potential-employee-wallet-address').val();
 
   console.log(walletAddress);
@@ -163,6 +189,17 @@ $('#admin-is-employed-form').on('submit', function (e) {
 $('#admin-get-payroll-balance-text').on('show.bs.collapse', function(e) {
   App.getPayrollBalance();
 })
+
+$('#admin-deposit-payroll-form').on('submit', function (e) {
+  e.preventDefault();
+
+  let amountToDeposit = $('#amount-to-deposit').val();
+
+  console.log(amountToDeposit);
+
+  App.depositInPayroll(amountToDeposit);
+})
+
 
 window.App = App
 
