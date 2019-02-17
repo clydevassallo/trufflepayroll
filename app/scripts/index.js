@@ -41,6 +41,8 @@ const App = {
   
         App.accounts = accs; 
         App.account = App.accounts[0];
+
+        $('#current-account').text(web3.eth.accounts[0]);
       })
     }, 1000)
 
