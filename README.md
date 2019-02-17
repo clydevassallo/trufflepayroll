@@ -53,5 +53,25 @@ The following software is required to build, test and run Truffle Payroll. The f
 
  * Run 'truffle test' in the root directory.
  
+### Running the application
+
+ * In the app folder, under the root directory, run 'npm run dev'. This will start the application on http://localhost:8080 by default.
+
+### Using the application 
+
+Below is a sample use-case of Truffle Payroll:
+
+ 1. Import the first account from ganache into Metamask. This account was used by default to deploy the smart contracts and represents the Employer or Payroll Administrator. 
+ 2. With the employer account active in MetaMask, go to the application url (default http://localhost:8080) and click on the 'Hire New Employee' button. Fill in the details of the form with the details of the desired employee. As an example, set the Wallet Address as the second account in Ganache, the Hourly Salary to 1 (1 ETH) and Max Hours per Day to 4.
+ 3. Click the submit button and confirm the transaction. 
+ 4. Click the 'Deposit Funds in Payroll' button and enter 5 (5 ETH) as the amount to deposit.
+ 5. Click the submit button and confirm the transaction. 
+ 6. Import the second account from ganache into Metamask. This account will represent the employee.
+ 7. With the employee account active in MetaMask, click on the 'Punch In' button and confirm the transaction. This will withdraw 4 ETH (1 ETH * 4 hours) from the Payroll account and open a Payment Channel with these funds. 
+ 8. With the employer account active in MetaMask, click on the 'Generate Hash and Signature' button. Enter the employee's wallet address and a payment value of 1 (1 ETH).
+ 9. Click the submit button and take note of the generated hash and signature. In a real world scenario, these are given to the employee on an out-of-band channel. 
+ 10. With the employee account active in MetaMask, click on the 'Punch Out' button. Enter the noted hash, signature and 1 (1 ETH) as a punch out value.
+ 11. Click the submit button and confirm the transaction. This will close the payment channel by selfdestructing the contract and send 1 ETH to the employee and the remaining 3 ETH to the Payroll contract.
+
 
 **Note: A more detailed documentation of the project can be found in the 'doc' directory under the root folder.**
