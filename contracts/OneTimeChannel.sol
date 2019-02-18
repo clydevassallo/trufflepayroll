@@ -22,18 +22,16 @@ contract OneTimeChannel {
     // SEE: https://github.com/ethereum/solidity/blob/develop/docs/solidity-by-example.rst#micropayment-channel 
     // v used to check which account's private key was used to sign the message, and the transaction's sender
     function closeChannel(bytes32 _hash, bytes _sig, uint value) 
-    public payable {
-        address signer;
-        bytes32 proof;
+    public {
 
         // get signer from signature
-        signer = getSignerFromHashAndSig(_hash, _sig);
+        address signer = getSignerFromHashAndSig(_hash, _sig);
         
         // signature is invalid, throw
         require(signer == channelOpener, "Message can only be signer by the channel opener.");
 
         // was "proof = sha3(this, value);"
-        proof = keccak256(abi.encodePacked(this, value));
+        bytes32 proof = keccak256(abi.encodePacked(this, value));
 
         // signature is valid but doesn't match the data provided
         require(proof == _hash, "Signature was correct but the value being withdraw does not match that specified by the signer.");
@@ -45,9 +43,8 @@ contract OneTimeChannel {
     }
     
     function timeOutChannel() 
-    public payable {
+    public {
         require (expirationDate <= now, "Channel timeout not yet elapsed");
-        require (msg.sender == channelOpener, "Not authorised. Only channel opener can timeout this channel.");
 
         selfdestruct(remainingBalanceWallet);
     }
