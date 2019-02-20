@@ -21,7 +21,8 @@ const Payroll = contract(payrollArtifact)
 const App = {
   
   start: function () {
-    const self = this
+    const self = this;
+    App.shownEvents = new Object();
 
     // Bootstrap the EmployeeContractStorage abstraction for Use.
     EmployeeContractStorage.setProvider(web3.currentProvider);
@@ -58,10 +59,13 @@ const App = {
       employeeContractStorage.EmployeeContractCreation({fromBlock: 'latest'}).watch(function(error, result){
         if (!error)
         {
-          console.log('No Error in EmployeeContractCreation Event!');
-          console.log(result);
+          if (!App.shownEvents[result.transactionHash]) {
+            $('#events-list').append('<li class="list-group-item" style="background-color:navy; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
+            App.shownEvents[result.transactionHash] = true;
+            console.log(JSON.stringify(result));
+          }
         } else {
-          console.err(error);
+          console.log(error);
         }
       }); 
     });
@@ -72,27 +76,49 @@ const App = {
       return payroll.getOwner.call({from: web3.eth.accounts[0]})
     }).then(function (owner) {
       console.log('Owner of payroll is ' + owner);
-      payroll.HiredEmployee().watch(function(error, result){
+      payroll.HiredEmployee({fromBlock: 'latest'}).watch(function(error, result){
         if (!error)
-          {
-            console.log('No Error in HiredEmployee Event!');
-            console.log(result);
-          } else {
-            console.err(error);
+        {
+          if (!App.shownEvents[result.transactionHash]) {
+            $('#events-list').append('<li class="list-group-item" style="background-color:navy; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
+            App.shownEvents[result.transactionHash] = true;
+            console.log(JSON.stringify(result));
           }
+          console.log(JSON.stringify(result));
+        } else {
+          console.log(error);
+        }
       }); 
     });
 
     Payroll.deployed().then(function (instance) {
-      let payroll = instance
-      payroll.PunchOut().watch(function(error, result){
+      let payroll = instance;
+      payroll.PunchIn({fromBlock: 'latest'}).watch(function(error, result){
         if (!error)
-          {
-            console.log('No Error in PunchOut Event!');
-            console.log(result);
-          } else {
-            console.err(error);
+        {
+          if (!App.shownEvents[result.transactionHash]) {
+            $('#events-list').append('<li class="list-group-item" style="background-color:navy; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
+            App.shownEvents[result.transactionHash] = true;
+            console.log(JSON.stringify(result));
           }
+          console.log(JSON.stringify(result));
+        } else {
+          console.log(error);
+        }
+      }); 
+
+      payroll.PunchOut({fromBlock: 'latest'}).watch(function(error, result){
+        if (!error)
+        {
+          if (!App.shownEvents[result.transactionHash]) {
+            $('#events-list').append('<li class="list-group-item" style="background-color:navy; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
+            App.shownEvents[result.transactionHash] = true;
+            console.log(JSON.stringify(result));
+          }
+          console.log(JSON.stringify(result));
+        } else {
+          console.log(error);
+        }
       }); 
     });
     

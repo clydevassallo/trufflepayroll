@@ -22,6 +22,10 @@ contract Payroll is Ownable {
         uint employeeId
     );
 
+    event PunchIn (
+        address indexed from
+    );
+
     event PunchOut (
         address indexed from,
         bytes32 _hash,
@@ -196,6 +200,8 @@ contract Payroll is Ownable {
 
         // Open the payment channel
         channels[employeeAddress] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerDay)(owner, address(this), employeeAddress, timeoutValue));    
+
+        emit PunchIn(msg.sender);
     }
 
     function getChannelParties(bytes32 _hash, bytes _signature) 
