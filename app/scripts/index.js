@@ -69,7 +69,7 @@ const App = {
     let payroll;
     Payroll.deployed().then(function (instance) {
       payroll = instance
-      return payroll.getOwner.call({from: web3.eth.accounts[0], gas:1000000})
+      return payroll.getOwner.call({from: web3.eth.accounts[0]})
     }).then(function (owner) {
       console.log('Owner of payroll is ' + owner);
       payroll.HiredEmployee().watch(function(error, result){
@@ -105,7 +105,7 @@ const App = {
       payroll = instance
       return payroll
       .hireEmployee(employeeAccount, web3.toWei(hourlySalary, "ether"), maxHoursPerDay, 
-        {from: web3.eth.accounts[0], gas:1000000}
+        {from: web3.eth.accounts[0], gas:180000}
       );
     }).then(function (value) {
       Swal.fire({
@@ -181,7 +181,7 @@ const App = {
     let payroll
     Payroll.deployed().then(function (instance) {
       payroll = instance
-      return payroll.addFunds({from: web3.eth.accounts[0], value: web3.toWei(amountToDeposit, "ether"), gas:1000000});
+      return payroll.addFunds({from: web3.eth.accounts[0], value: web3.toWei(amountToDeposit, "ether"), gas:22000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
@@ -290,7 +290,7 @@ const App = {
     Payroll.deployed().then(function (instance) {
       payroll = instance
       return payroll
-      .punchIn({from: web3.eth.accounts[0], gas:1000000});
+      .punchIn({from: web3.eth.accounts[0], gas:810000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
@@ -317,14 +317,14 @@ const App = {
   let payroll
     Payroll.deployed().then(function (instance) {
       payroll = instance
-      return payroll.getChannelParties.call(hash, signature, {from: web3.eth.accounts[0], gas:1000000});
+      return payroll.getChannelParties.call(hash, signature, {from: web3.eth.accounts[0]});
     }).then(function (signerAndOpener) {  
       console.log('Signer is ' + signerAndOpener[0]);
       console.log('Opener is ' + signerAndOpener[1]);
       console.log('Payee is ' + signerAndOpener[2]);
       console.log('Remaining Balance Wallet is ' + signerAndOpener[3]);
       return payroll
-      .punchOut(hash, signature, web3.toWei(value, "ether"), {from: web3.eth.accounts[0], gas:1000000});
+      .punchOut(hash, signature, web3.toWei(value, "ether"), {from: web3.eth.accounts[0], gas:40000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',

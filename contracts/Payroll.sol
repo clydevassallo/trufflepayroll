@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import "./EmployeeContractStorage.sol";
 import "./OneTimeChannel.sol";
 
-import "zeppelin/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Payroll is Ownable {
 
@@ -74,14 +74,14 @@ contract Payroll is Ownable {
     function withdrawFunds(uint amount) 
     public onlyOwner {
         // Administrator of the payroll can withdraw funds
-        require(amount <= this.balance);
+        require(amount <= address(this).balance);
         msg.sender.transfer(amount);
     }
 
     function getBalance() 
     public view onlyOwner
     returns (uint) {
-        return this.balance;
+        return address(this).balance;
     }
 
     function releaseChannel(address _employeeAddress) 
@@ -172,7 +172,7 @@ contract Payroll is Ownable {
 
         // Ensure there is enough money in the payroll to pay the maximum salary
         // TODO should add padding for costs?
-        require(this.balance >= employeeMaximumSalaryPerDay, "There is not enough money in the payroll. Contact your administrator");
+        require(address(this).balance >= employeeMaximumSalaryPerDay, "There is not enough money in the payroll. Contact your administrator");
 
         // Set as punched in
         // TODO should add check again under this if punched in to prevent reentrancy?
@@ -217,7 +217,6 @@ contract Payroll is Ownable {
         require(employeePunchInTime[employeeAddress] != 0);
 
         // Consider punch in and current time compared to max value
-        uint currentTime = now;
         uint punchInTime = employeePunchInTime[employeeAddress];
         uint punchedInSeconds = now - punchInTime;
         uint punchedInHours = punchedInSeconds / 1 hours;

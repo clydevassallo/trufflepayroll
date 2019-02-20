@@ -1,6 +1,8 @@
 pragma solidity ^0.4.24;
 
-contract EmployeeContractStorage {
+import "openzeppelin-solidity/contracts/access/Whitelist.sol";
+
+contract EmployeeContractStorage is Whitelist {
 
     /* Data Definitions */ 
 
@@ -24,6 +26,10 @@ contract EmployeeContractStorage {
     mapping (address => uint) employeesToIdMap;
 
     /* Function Modifiers */
+    modifier onlyIfSenderWhitelisted() {
+        require(hasRole(msg.sender, ROLE_WHITELISTED), "Sender is not whitelisted!");
+        _;
+    }
 
     modifier employeeContractExists(uint _id) {
         require(employeeContractsIdMap[_id].exists == true, "Employee does not exist");
@@ -50,7 +56,7 @@ contract EmployeeContractStorage {
     /* Functions */
 
     function createEmployeeContract(address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay) 
-    public 
+    public onlyIfSenderWhitelisted
     returns (uint) {
 
         // Check that incomeAccount is unique (required for access control in employeeonly function for payroll) 
@@ -78,16 +84,6 @@ contract EmployeeContractStorage {
         return employeeId;
     }
 
-    function deleteEmployeeContract(uint _id) 
-    public employeeContractExists(_id) {
-        // Remove address from Employees to Id map
-        address employeeAddress = employeeContractsIdMap[_id].incomeAccount;
-        employeesToIdMap[employeeAddress] = 0;
-
-        // Clear struct in mapping
-        delete employeeContractsIdMap[_id];
-    }
-
     function readEmployeeContractIncomeAccount(uint _id) 
     public employeeContractExists(_id)
     view 
@@ -96,7 +92,7 @@ contract EmployeeContractStorage {
     }
 
     function updateHourlySalary(uint _id, uint _hourlySalary)
-    public employeeContractExists(_id) {
+    public onlyIfSenderWhitelisted employeeContractExists(_id) {
         employeeContractsIdMap[_id].hourlySalary = _hourlySalary;
     }
 
