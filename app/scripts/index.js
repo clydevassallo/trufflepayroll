@@ -290,7 +290,7 @@ const App = {
     Payroll.deployed().then(function (instance) {
       payroll = instance
       return payroll
-      .punchIn({from: web3.eth.accounts[0], gas:810000});
+      .punchIn({from: web3.eth.accounts[0], gas:900000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
@@ -324,7 +324,7 @@ const App = {
       console.log('Payee is ' + signerAndOpener[2]);
       console.log('Remaining Balance Wallet is ' + signerAndOpener[3]);
       return payroll
-      .punchOut(hash, signature, web3.toWei(value, "ether"), {from: web3.eth.accounts[0], gas:40000});
+      .punchOut(hash, signature, web3.toWei(value, "ether"), {from: web3.eth.accounts[0], gas:80000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
@@ -356,19 +356,8 @@ const App = {
     }).then(function (isPunchedIn) {
       $('#employee-is-punched-in-text').text('Am I Punched In? ' + isPunchedIn);
     });
-  },
-
-  getMyId: function() {
-    let payroll
-    Payroll.deployed().then(function (instance) {
-      payroll = instance
-      return payroll
-      .getEmployeeId.call({from: web3.eth.accounts[0]});
-    }).then(function (employeeId) {
-      console.log(employeeId);
-      $('#employee-get-my-id-text').text('Employee Id is ' + employeeId);
-    });
   }
+
 }
 
 /* Administration Event Listeners */
@@ -454,10 +443,6 @@ $('#employee-is-punched-in-text').on('show.bs.collapse', function(e) {
 $('#employee-punch-in').on('click', function (e) {
   console.log("Punching in....");
   App.punchIn();
-})
-
-$('#employee-get-my-id-text').on('show.bs.collapse', function(e) {
-  App.getMyId();
 })
 
 $('#employee-punch-out-form').on('submit', function (e) {

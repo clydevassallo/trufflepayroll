@@ -158,14 +158,11 @@ contract Payroll is Ownable {
             Get required information to validate and open channel
         */
 
-        // Get employee id
-        uint employeeId = getEmployeeContractStorage().readEmployeeId(employeeAddress);
-
         // Get Salary Per Hour 
-        uint employeeSalaryPerHour = getEmployeeContractStorage().readHourlySalary(employeeId);
+        uint employeeSalaryPerHour = getEmployeeContractStorage().readHourlySalary(employeeAddress);
 
         // Get Maximum Hours Per Day
-        uint employeeMaximumHoursPerDay = getEmployeeContractStorage().readMaximumHoursPerDay(employeeId);
+        uint employeeMaximumHoursPerDay = getEmployeeContractStorage().readMaximumHoursPerDay(employeeAddress);
         
         // Calculate maximum salary for day
         uint employeeMaximumSalaryPerDay = employeeSalaryPerHour * employeeMaximumHoursPerDay;
@@ -224,11 +221,8 @@ contract Payroll is Ownable {
         // Set employee punch in time to 0 to indicate punched out
         employeePunchInTime[employeeAddress] = 0;
 
-        // Get employee id
-        uint employeeId = getEmployeeContractStorage().readEmployeeId(employeeAddress);
-
         // Get Salary Per Hour 
-        uint employeeSalaryPerHour = getEmployeeContractStorage().readHourlySalary(employeeId);
+        uint employeeSalaryPerHour = getEmployeeContractStorage().readHourlySalary(employeeAddress);
 
         // Calculate Maximum Salary
         // HourlySalary * (HoursWorked + 1)) + HalfHourlySalary
@@ -254,13 +248,6 @@ contract Payroll is Ownable {
         address employeeAddress = msg.sender;
         
         return employeePunchInTime[employeeAddress] > 0;
-    }
-
-    function getEmployeeId() 
-    public view onlyEmployee
-    returns (uint) {
-        uint employeeId = getEmployeeContractStorage().readEmployeeId(msg.sender);
-        return employeeId;
     }
 
     /* Private functions */

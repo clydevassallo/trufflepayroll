@@ -8,9 +8,6 @@ contract EmployeeContractStorage is Whitelist {
 
     struct EmployeeContract {
         bool exists;
-        uint id;
-        address incomeAccount;
-
         uint hourlySalary;
         uint maximumHoursPerDay;
     }
@@ -22,8 +19,7 @@ contract EmployeeContractStorage is Whitelist {
 
     // Employee Contracts Storage
 
-    mapping (uint => EmployeeContract) employeeContractsIdMap;
-    mapping (address => uint) employeesToIdMap;
+    mapping (address => EmployeeContract) employeeContractsMap;
 
     /* Function Modifiers */
     modifier onlyIfSenderWhitelisted() {
@@ -31,8 +27,8 @@ contract EmployeeContractStorage is Whitelist {
         _;
     }
 
-    modifier employeeContractExists(uint _id) {
-        require(employeeContractsIdMap[_id].exists == true, "Employee does not exist");
+    modifier employeeContractExists(address _address) {
+        require(employeeContractsMap[_address].exists == true, "Employee does not exist");
         _;
     }
 
@@ -40,7 +36,6 @@ contract EmployeeContractStorage is Whitelist {
 
     event EmployeeContractCreation (
         address indexed _from,
-        uint employeeId,
         address incomeAccount,
         uint hourlySalary,
         uint maximumHoursPerDay,
@@ -60,69 +55,46 @@ contract EmployeeContractStorage is Whitelist {
     returns (uint) {
 
         // Check that incomeAccount is unique (required for access control in employeeonly function for payroll) 
-        require(employeesToIdMap[_incomeAccount] == 0, "Employee with this account already exists");
-
-        // Set employeeId to the next employee counter + 1 to avoid default int
-        uint employeeId = employeeCounter + 1; 
+        require(employeeContractsMap[_incomeAccount].exists == false, "Employee with this account already exists");
 
         // Populate Employee Contract structure in map
-        employeeContractsIdMap[employeeId].exists = true;
-        employeeContractsIdMap[employeeId].id = employeeId;
-        employeeContractsIdMap[employeeId].incomeAccount = _incomeAccount;
-        employeeContractsIdMap[employeeId].hourlySalary = _hourlySalary;
-        employeeContractsIdMap[employeeId].maximumHoursPerDay = _maximumHoursPerDay;
+        employeeContractsMap[_incomeAccount].exists = true;
+        employeeContractsMap[_incomeAccount].hourlySalary = _hourlySalary;
+        employeeContractsMap[_incomeAccount].maximumHoursPerDay = _maximumHoursPerDay;
 
         // Fire event
-        emit EmployeeContractCreation(msg.sender, employeeContractsIdMap[employeeId].id, employeeContractsIdMap[employeeId].incomeAccount, employeeContractsIdMap[employeeId].hourlySalary, employeeContractsIdMap[employeeId].maximumHoursPerDay, false);
-
-        // Add address to Employees to Id map
-        employeesToIdMap[_incomeAccount] = employeeId;
+        emit EmployeeContractCreation(msg.sender, _incomeAccount, employeeContractsMap[_incomeAccount].hourlySalary, employeeContractsMap[_incomeAccount].maximumHoursPerDay, false);
 
         // Increment employee counter
         employeeCounter++;
 
-        return employeeId;
+        return employeeCounter;
     }
 
-    function readEmployeeContractIncomeAccount(uint _id) 
-    public employeeContractExists(_id)
-    view 
-    returns (address) {
-        return employeeContractsIdMap[_id].incomeAccount;
-    }
-
-    function updateHourlySalary(uint _id, uint _hourlySalary)
-    public onlyIfSenderWhitelisted employeeContractExists(_id) {
-        employeeContractsIdMap[_id].hourlySalary = _hourlySalary;
-    }
-
-    function readEmployeeId(address _employeeAddress) 
-    public 
-    view
-    returns (uint) {
-        return employeesToIdMap[_employeeAddress];
+    function updateHourlySalary(address _incomeAccount, uint _hourlySalary)
+    public onlyIfSenderWhitelisted employeeContractExists(_incomeAccount) {
+        employeeContractsMap[_incomeAccount].hourlySalary = _hourlySalary;
     }
 
     function employeeExists(address _employeeAddress) 
     public 
     view 
     returns (bool) {
-        uint employeeId = readEmployeeId(_employeeAddress);
-        return employeeId > 0 && employeeContractsIdMap[employeeId].exists == true; // Added 2nd check for redundancy
+        return employeeContractsMap[_employeeAddress].exists == true; // Added 2nd check for redundancy
     }
 
-    function readMaximumHoursPerDay(uint _id) 
-    public employeeContractExists(_id)
+    function readMaximumHoursPerDay(address _employeeAddress) 
+    public employeeContractExists(_employeeAddress)
     view
     returns (uint) {
-        return employeeContractsIdMap[_id].maximumHoursPerDay;
+        return employeeContractsMap[_employeeAddress].maximumHoursPerDay;
     }
 
-    function readHourlySalary(uint _id) 
-    public // employeeContractExists(_id)
+    function readHourlySalary(address _employeeAddress) 
+    public employeeContractExists(_employeeAddress)
     view
     returns (uint) {
-        return employeeContractsIdMap[_id].hourlySalary;
+        return employeeContractsMap[_employeeAddress].hourlySalary;
     }
 
     function getNumberOfEmployees() 

@@ -8,8 +8,10 @@ contract('EmployeeContractStorage', function (accounts) {
         let employeeId;
         return EmployeeContractStorage
             .deployed()
-            .then(function (instance) {
+            .then(function(instance) {
                 employeeContractStorage = instance;
+                return employeeContractStorage.addAddressToWhitelist(accounts[0]);
+            }).then(function () {
                 return employeeContractStorage.getNumberOfEmployees.call();
             }).then(function (_employeeCount) {
                 console.log('Employee count before = ' + _employeeCount);
@@ -24,26 +26,15 @@ contract('EmployeeContractStorage', function (accounts) {
                 console.log('Employee count after = ' + _employeeCount);
                 // Then the number of employees increased by 1
                 assert.equal(Number(employeeCount) + 1, _employeeCount);
-                employeeCount = _employeeCount;
-
-                // When I retrieve the employee id for the same account
-                return employeeContractStorage.readEmployeeId.call(accounts[1]);
-            }).then(function(_employeeId) {
-                // Then the id is equal to the new employee count
-                console.log('Employee id = ' + _employeeId);
-                console.log('Employee count = ' + employeeCount);
-                assert.equal(Number(employeeCount), Number(_employeeId), "Employee was not equal to the new employee count as expected because it was " + employeeId);
-
-                employeeId = _employeeId;
-
+              
                 // When I retrieve the hourly salary
-                return employeeContractStorage.readHourlySalary.call(employeeId);
+                return employeeContractStorage.readHourlySalary.call(accounts[1]);
             }).then(function (hourlySalary) {
                 // Then the hourly salary is as expected
                 assert.equal(100, hourlySalary, "Hourly salary was not as expected but was " + hourlySalary);
 
                 // When I retrieve the maximum hours per day
-                return employeeContractStorage.readMaximumHoursPerDay.call(employeeId);
+                return employeeContractStorage.readMaximumHoursPerDay.call(accounts[1]);
             }).then(function (maximumHoursPerDay) {
                 // Then the hourly salary is as expected
                 assert.equal(8, maximumHoursPerDay, "Maximum Hours Per Day was not as expected but was " + maximumHoursPerDay);
