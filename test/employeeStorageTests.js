@@ -48,7 +48,6 @@ contract('EmployeeContractStorage', function (accounts) {
             }).then(function () {
                 return employeeContractStorage.getNumberOfEmployees.call();
             }).then(function (_employeeCount) {
-                console.log('Employee count before = ' + _employeeCount);
                 employeeCount = _employeeCount;
 
                 // Given I create an employee contract for an account
@@ -57,7 +56,6 @@ contract('EmployeeContractStorage', function (accounts) {
                 // When I retrieve the employee count
                 return employeeContractStorage.getNumberOfEmployees.call();    
             }).then(function (_employeeCount) {
-                console.log('Employee count after = ' + _employeeCount);
                 // Then the number of employees increased by 1
                 assert.equal(Number(employeeCount) + 1, _employeeCount);
               
