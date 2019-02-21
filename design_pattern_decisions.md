@@ -32,11 +32,11 @@ channels[employeeAddress] = OneTimeChannel(0);
 
 ### About the pattern
 
-The Withdrawal Pattern is based around the principle of having recipients of payments pull their money out of the contract rather than having the contract push money out to its recipients. Commonly the send() function is used to send ether from a contract to a recipient. Whenever this function is called, if the recipient is another contract, its fallback/default function is called. If this function fails, the function calling the send() is reverted. Such contracts can be exploited by attackers to prevent payments to other recipients. 
+The Withdrawal Pattern is based around the principle of having recipients of payments pull their money out of the contract rather than having the contract push money out to its recipients. Commonly the transfer() function is used to send ether from a contract to a recipient. Whenever this function is called, if the recipient is another contract, its fallback/default function is called. If this function fails, the function calling the transfer() is reverted. Such contracts can be exploited by attackers to prevent payments to other recipients. 
 
 With the Withdrawal Pattern, a failing payment to a recipient does not affect other payments, thus safeguarding against these attacks and making the contract more robust. 
 
-### Usecase
+### Use-case
 
 In the developed Dapp, the withdrawal pattern was implemented on punch out. Employees initiate there own withdrawal when punching out by closing the payment channel and, if this withdrawal fails, other employees are not affected.
 
@@ -50,3 +50,23 @@ public onlyOwner {
     msg.sender.transfer(amount);
 }
 ```
+
+## Mapping Iterator Pattern
+
+## About the pattern
+
+The mapping iterator pattern provides a way through which one can iterate over the keys in a mapping to access its data. While convenient, iterating over mappings is expensive and should be avoided unless absolutely necessary.
+
+## Use-case
+
+The EmployeeContractStorage contract implements the mapping iterator pattern by storage an array of employee address and providing a function to get the employee address from the index. This pattern was implemented due to the fact that the contract was designed in a way to act as a store of data which can be potentially used by other contracts. While presently used, it is impossible to predict the ways new contracts will need to interact with this data and the cost of storing the keys array was considered an acceptible when compared to the cost of migrating all employee contract data if iterating on data is required in the future.
+
+## Checks Effects Interactions Pattern
+
+### About the pattern
+
+This is a security pattern used to guard against reentrancy attacks which are further discussed in the avoiding_common_attacks document. Given the risks involved when calling unknown external addresses, this pattern states that effect should be applied before interactions rather then afterwards. In case of failed interaction, these effects will still be reverted and the contract state will remain intact. 
+
+### Use-case
+
+This pattern was used whenever calls to unknown external addresses were made. In the developed Dapp, such calls are typically done through the transfer() function of the closeChannel method initiated on punch out. In these cases, the employee was marked as punched out before closing the channel and the channel was marked as closed before initiating the transfer.

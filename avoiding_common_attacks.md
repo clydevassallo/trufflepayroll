@@ -7,7 +7,7 @@ This section outlines the vulnerabilities commonly exploited by attackers and th
 
 Contracts vulnerable to reentrancy attacks are characterised by updating the state guarding the contract __after__ a call to an external contract is made. 
 
-Most commonly, this vulnerability occurs when contracts call a function to transfer ether to another address without setting the variable marking that the user has already without his funds beforehand. Since the send() function calls the fallback/default function of its recipient if it happens to be a contract, a malicious attacker would cause the vulnerable contract to call a callback function crafted to recursively call the vulnerable fuction. Another possible attack is to call the vulnerable function multiple times in a short timespan.
+Most commonly, this vulnerability occurs when contracts call a function to transfer ether to another address without setting the variable marking that the user has already without his funds beforehand. Since the transfer() function calls the fallback/default function of its recipient if it happens to be a contract, a malicious attacker would cause the vulnerable contract to call a callback function crafted to recursively call the vulnerable fuction. Another possible attack is to call the vulnerable function multiple times in a short timespan.
 
 ### Preventive measures taken
 

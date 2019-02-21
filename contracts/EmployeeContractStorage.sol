@@ -20,6 +20,7 @@ contract EmployeeContractStorage is Whitelist {
     // Employee Contracts Storage
 
     mapping (address => EmployeeContract) employeeContractsMap;
+    address[] keys;
 
     /* Function Modifiers */
     modifier onlyIfSenderWhitelisted() {
@@ -28,7 +29,12 @@ contract EmployeeContractStorage is Whitelist {
     }
 
     modifier employeeContractExists(address _address) {
-        require(employeeContractsMap[_address].exists == true, "Employee does not exist");
+        require(employeeContractsMap[_address] != address(0) && employeeContractsMap[_address].exists == true, "Employee does not exist");
+        _;
+    }
+
+    modifier employeeContractDoesntExist(address _address) {
+        require(employeeContractsMap[_address] == address(0) || employeeContractsMap[_address].exists == false, "Employee already exists");
         _;
     }
 
@@ -50,24 +56,23 @@ contract EmployeeContractStorage is Whitelist {
     /* Functions */
 
     function createEmployeeContract(address _incomeAccount, uint _salaryPerSecond, uint _maximumSecondsPerSession) 
-    public onlyIfSenderWhitelisted
+    public onlyIfSenderWhitelisted employeeContractDoesntExist(_incomeAccount)
     returns (uint) {
-
-        // Check that incomeAccount is unique (required for access control in employeeonly function for payroll) 
-        require(employeeContractsMap[_incomeAccount].exists == false, "Employee with this address already exists");
-
         // Populate Employee Contract structure in map
         employeeContractsMap[_incomeAccount].exists = true;
         employeeContractsMap[_incomeAccount].salaryPerSecond = _salaryPerSecond;
         employeeContractsMap[_incomeAccount].maximumSecondsPerSession = _maximumSecondsPerSession;
 
-        // Increment employee counter
-        employeeCounter++;
+        // Add to key
+        keys.push(_incomeAccount);
 
         // Fire event
         emit EmployeeContractCreation(msg.sender, _incomeAccount, employeeContractsMap[_incomeAccount].salaryPerSecond, employeeContractsMap[_incomeAccount].maximumSecondsPerSession);
 
-        return employeeCounter;
+        // Increment employee counter
+        employeeCounter++;
+
+        return employeeCounter - 1;
     }
 
     // Setter for Salary Per Second
@@ -98,6 +103,12 @@ contract EmployeeContractStorage is Whitelist {
         return employeeContractsMap[_employeeAddress].maximumSecondsPerSession;
     }
 
+    function getAddressByIndex(uint _index) 
+    public view
+    returns (address) {
+        return keys[_index];
+    }
+
     function getNumberOfEmployees() 
     public view 
     returns (uint) {
@@ -105,8 +116,7 @@ contract EmployeeContractStorage is Whitelist {
     }
 
     function employeeExists(address _employeeAddress) 
-    public 
-    view 
+    public view 
     returns (bool) {
         return employeeContractsMap[_employeeAddress].exists == true; // Added 2nd check for redundancy
     }
