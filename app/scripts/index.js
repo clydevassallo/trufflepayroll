@@ -195,18 +195,24 @@ const App = {
     })  
   },
 
-  generateHashAndSignature: function(employeeAddress, paymentValue) {
-    let payroll
+  generateHashAndSignature: function(employeeAddress) {
+    let payroll;
+    let channelAddress;
     Payroll.deployed().then(function (instance) {
       payroll = instance
       return payroll.getEmployeeChannelAddress.call(employeeAddress);
-    }).then(function (channelAddress) {
+    }).then(function (employeeChannelAddress) {
+      channelAddress = employeeChannelAddress; 
+
+      return payroll.getEmployeeCurrentMaximumSalary.call(employeeAddress);
+    }).then(function (currentMaximumSalary) {
+      let paymentValue = currentMaximumSalary.toString();
       if (channelAddress) {
         // Generate hash and signature from address and value
         console.log('Channel Address is ' + channelAddress);
         let message = abi.soliditySHA3(
             ["address", "uint256"],
-            [channelAddress, web3.toWei(paymentValue, "ether")]
+            [channelAddress, paymentValue]
         );
 
         let hash = "0x" + message.toString("hex");
@@ -224,7 +230,7 @@ const App = {
                 position: 'top-end',
                 type: 'success',
                 title: 'Successfully Generated Signature',
-                text: 'Hash: ' + hash + '. Signature: ' + result,
+                text: 'Hash: ' + hash + '. Signature: ' + result + '. Value: ' + paymentValue,
                 showConfirmButton: true,
                 width: 500
               });
@@ -244,7 +250,16 @@ const App = {
           width: 300
         });
       }
-    })
+    }).catch(function (e){
+      Swal.fire({
+        position: 'top-end',
+        type: 'error',
+        title: 'Failed to get generate hash and signature. Ensure employee is punched in',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
+    });
   },
 
   timeoutChannel: function(walletAddress) {
@@ -315,7 +330,7 @@ const App = {
       console.log('Payee is ' + signerAndOpener[2]);
       console.log('Remaining Balance Wallet is ' + signerAndOpener[3]);
       return payroll
-      .punchOut(hash, signature, web3.toWei(value, "ether"), {from: web3.eth.accounts[0], gas:80000});
+      .punchOut(hash, signature, value, {from: web3.eth.accounts[0], gas:80000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
@@ -406,12 +421,10 @@ $('#admin-generate-signature-form').on('submit', function (e) {
   e.preventDefault();
 
   let payeeAddress = $('#employee-payee-address').val();
-  let paymentValue = $('#employee-payee-value').val();
 
   console.log(payeeAddress);
-  console.log(paymentValue);
 
-  App.generateHashAndSignature(payeeAddress, paymentValue);
+  App.generateHashAndSignature(payeeAddress);
 })
 
 $('#admin-timeout-channel-form').on('submit', function (e) {

@@ -147,13 +147,13 @@ contract Payroll is Ownable {
         return channelAddress;
     }
 
-    function getCurrentMaximumSalary(address _employeeAddress) 
+    function getEmployeeCurrentMaximumSalary(address _employeeAddress) 
     public view onlyOwner
     returns (uint) {
         require(_employeeAddress != address(0), "Given address is invalid. Points to 0x0.");
         require(isEmployed(_employeeAddress), "Employee is not employed");
         
-        return getEmployeeCurrentMaximumSalary(_employeeAddress);
+        return getEmployeeCurrentMaxSalary(_employeeAddress);
     }
 
 
@@ -251,7 +251,7 @@ contract Payroll is Ownable {
     function getCurrentMaximumSalary() 
     public view onlyEmployee
     returns (uint) {
-        return getEmployeeCurrentMaximumSalary(msg.sender);
+        return getEmployeeCurrentMaxSalary(msg.sender);
     }
 
     /* Private Functions */
@@ -262,7 +262,7 @@ contract Payroll is Ownable {
         return employeeContractStorage;
     }
 
-    function getEmployeeCurrentMaximumSalary(address _employeeAddress)
+    function getEmployeeCurrentMaxSalary(address _employeeAddress)
     private view 
     returns (uint) {
         // Ensure employee is punched in
