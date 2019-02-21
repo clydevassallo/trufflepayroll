@@ -50,6 +50,16 @@ To prevent such vulnerabilities, in the Payroll contract, open-zeppelin's SafeMa
 ## 3. Dependency on Contract Balance
 
 ### Cause of vulnerability
+
+Some contracts base their logic on the value of their balance with the assumption that it was only changed in an expected way. However, attackers can manipulate the balance of contracts, by sending money into the contract if the fallback/default function is not protected. Even if such a function is protected, attackers can manipulate this balance by exploiting the fact that the selfdestruct() method does not call the fallback/defualt function or its recipient and still send ether to the targetted contract.
+
 ### Preventive measures taken
 
-## 
+When writing this Dapp, it was always assumed that the balance of the contracts was modifiable by attackers. With this in mind, no critical logic was based on the exact value of the contracts' balances. If an attacker was to send money to this Dapp's contract, the money would be added to the contract's balance without affecting it's behavior in unpredicted ways.
+
+## 4. Block Timestamp Manipulation
+
+### Cause of vulnerability and preventive measures taken
+
+Due to its decentralized nature, in Ethereum there is no single system clock which can act as a single source of truth for the current time. Within limits attackers can manipulate the block's timestamp (aliased as _now_) and exploit logic which relies on it's randomness or accurateness. Being a payroll system, this Dapp relies on time to compute the salary of employees. Care was taken to avoid assuming that the value for _now_ is accurate or truly random. The research into this topic is further explain in the supporting documentation.
+
