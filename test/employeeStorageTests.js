@@ -28,16 +28,16 @@ contract('EmployeeContractStorage', function (accounts) {
                 assert.equal(Number(employeeCount) + 1, _employeeCount);
               
                 // When I retrieve the hourly salary
-                return employeeContractStorage.readHourlySalary.call(accounts[1]);
-            }).then(function (hourlySalary) {
+                return employeeContractStorage.readSalaryPerSecond.call(accounts[1]);
+            }).then(function (salaryPerSecond) {
                 // Then the hourly salary is as expected
-                assert.equal(100, hourlySalary, "Hourly salary was not as expected but was " + hourlySalary);
+                assert.equal(100, salaryPerSecond, "Salary per second was not as expected but was " + salaryPerSecond);
 
                 // When I retrieve the maximum hours per day
-                return employeeContractStorage.readMaximumHoursPerDay.call(accounts[1]);
-            }).then(function (maximumHoursPerDay) {
+                return employeeContractStorage.readMaximumSecondsPerSession.call(accounts[1]);
+            }).then(function (maximumSecondsPerSession) {
                 // Then the hourly salary is as expected
-                assert.equal(8, maximumHoursPerDay, "Maximum Hours Per Day was not as expected but was " + maximumHoursPerDay);
+                assert.equal(8, maximumSecondsPerSession, "Maximum Hours Per Day was not as expected but was " + maximumSecondsPerSession);
             });
     });
     

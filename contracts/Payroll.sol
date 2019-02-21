@@ -149,13 +149,10 @@ contract Payroll is Ownable {
         return channelAddress;
     }
 
-    function getEmployeeCurrentMaximumSalary(address _employeeAddress) 
-    public onlyOwner
+    function getEmployeeMaximumSalary(address _employeeAddress, uint _time) 
+    public onlyOwner view
     returns (uint) {
-        require(_employeeAddress != address(0), "Given address is invalid. Points to 0x0.");
-        require(isEmployed(_employeeAddress), "Employee is not employed");
-        
-        return getEmployeeCurrentMaxSalary(_employeeAddress);
+        return getEmployeeMaxSalary(_employeeAddress, _time);
     }
 
 
@@ -250,10 +247,11 @@ contract Payroll is Ownable {
         return employeePunchInTime[employeeAddress] > 0;
     }
 
+    // Could be marked as view but the now would not be evaluated properly
     function getCurrentMaximumSalary() 
     public onlyEmployee
     returns (uint) {
-        return getEmployeeCurrentMaxSalary(msg.sender);
+        return getEmployeeMaxSalary(msg.sender, now);
     }
 
     /* Private Functions */
@@ -264,16 +262,15 @@ contract Payroll is Ownable {
         return employeeContractStorage;
     }
 
-    // Could be marked as view but the now would not be evaluated properly
-    function getEmployeeCurrentMaxSalary(address _employeeAddress)
-    private 
+    function getEmployeeMaxSalary(address _employeeAddress, uint _currentTime)
+    private view
     returns (uint) {
         // Ensure employee is punched in
         require(employeePunchInTime[_employeeAddress] != 0);
 
         // Consider punch in and current time compared to max value
         uint punchInTime = employeePunchInTime[_employeeAddress];
-        uint punchedInTime = now.sub(punchInTime);
+        uint punchedInTime = _currentTime.sub(punchInTime);
 
         // Get employee maximum seconds per session
         uint maximumSecondsPerSession = getEmployeeContractStorage().readMaximumSecondsPerSession(_employeeAddress);
@@ -286,11 +283,10 @@ contract Payroll is Ownable {
         uint employeeSalaryPerSecond = getEmployeeContractStorage().readSalaryPerSecond(_employeeAddress);
 
         // Calculate Maximum Salary
-        // SalaryPerSecond * (SecondsWork + 900)) + (900 Seconds of Salary)
+        // SalaryPerSecond * (SecondsWork + 900)
         // The (+ 900) in seconds worked is added to account for the loss in precision of the punchedInTime calculation
-        // The (+ 900 Seconds of Salary) was added to account for the lack of precision in the 'now' (+-900s)
         // Note: The employer is very lenient with this calculation
-        uint currrentMaximumSalary = (employeeSalaryPerSecond.mul(punchedInTime.add(900))).add(employeeSalaryPerSecond.mul(900));        // Validate value
+        uint currrentMaximumSalary = (employeeSalaryPerSecond.mul(punchedInTime.add(900)));
 
         return currrentMaximumSalary;
     }

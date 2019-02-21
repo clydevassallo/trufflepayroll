@@ -205,11 +205,9 @@ const App = {
     }).then(function (employeeChannelAddress) {
       channelAddress = employeeChannelAddress; 
 
-      // Transaction to change state and correctly evalute 'now'
-      return payroll.getEmployeeCurrentMaximumSalary(employeeAddress, {from: web3.eth.accounts[0]});
-    }).then( function() {
-      // Call to get value from previous transaction
-      return payroll.getEmployeeCurrentMaximumSalary.call(employeeAddress);
+      // Get maximum salary based on current time 
+      let currentTimestamp = ~~(Date.now() / 1000)
+      return payroll.getEmployeeMaximumSalary.call(employeeAddress, currentTimestamp);
     }).then(function (currentMaximumSalary) {
       let paymentValue = currentMaximumSalary.toString();
       if (channelAddress) {
