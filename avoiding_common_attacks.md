@@ -1,6 +1,6 @@
 # Vulnerabilities
 
-This document outlines the vulnerabilities commonly exploited by attackers and the precautions taken in this Dapp to prevent them.
+This section outlines the vulnerabilities commonly exploited by attackers and the precautions taken in this Dapp to prevent them.
 
 ## 1. Reentrancy
 ### Cause of vulnerability
@@ -62,4 +62,14 @@ When writing this Dapp, it was always assumed that the balance of the contracts 
 ### Cause of vulnerability and preventive measures taken
 
 Due to its decentralized nature, in Ethereum there is no single system clock which can act as a single source of truth for the current time. Within limits attackers can manipulate the block's timestamp (aliased as _now_) and exploit logic which relies on it's randomness or accurateness. Being a payroll system, this Dapp relies on time to compute the salary of employees. Care was taken to avoid assuming that the value for _now_ is accurate or truly random. The research into this topic is further explain in the supporting documentation.
+
+# Security best practices
+
+Other security measures taken to ensure that the Dapp is not compromised by malicious users.
+
+## Access Control
+
+
+
+## Function Visibilities
 
