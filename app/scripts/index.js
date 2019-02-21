@@ -173,7 +173,7 @@ const App = {
     let payroll
     Payroll.deployed().then(function (instance) {
       payroll = instance
-      return payroll.addFunds({from: web3.eth.accounts[0], value: web3.toWei(amountToDeposit, "ether"), gas:22000});
+      return payroll.addFunds({from: web3.eth.accounts[0], value: web3.toWei(amountToDeposit, "ether"), gas:25000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
@@ -333,7 +333,7 @@ const App = {
       console.log('Payee is ' + signerAndOpener[2]);
       console.log('Remaining Balance Wallet is ' + signerAndOpener[3]);
       return payroll
-      .punchOut(hash, signature, value, {from: web3.eth.accounts[0], gas:80000});
+      .punchOut(hash, signature, value, {from: web3.eth.accounts[0], gas:120000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',

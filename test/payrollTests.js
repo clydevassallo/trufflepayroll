@@ -1,5 +1,6 @@
 var Payroll = artifacts.require('./Payroll.sol');
 var EmployeeContractStorage = artifacts.require('./EmployeeContractStorage.sol');
+import { default as Abi } from 'ethereumjs-abi'
 
 // https://truffleframework.com/docs/truffle/testing/testing-your-contracts#clean-room-environment
 // ^ Should be at a clean state
@@ -107,5 +108,66 @@ contract('Payroll', function (accounts) {
             assert.isOk(isPunchedIn, "Expected employee to be punched in but was not.");
         });
     });
+
+    it('should allow employees to punch out', function() {
+        let payroll
+        let hash
+        let signature
+        return Payroll
+        .deployed()
+        .then(function (instance) {
+            payroll = instance;
+            return payroll.getOwner.call();
+        }).then(function(owner){
+            console.log('owner is '+ owner);
+            console.log('account0 is ' + accounts[0]);
+            return payroll.getBalance.call();
+        }).then(function(balance) {
+            return payroll.hireEmployee(accounts[4], balance/4, 2);
+        }).then(function() {
+            return payroll.punchIn({from: accounts[4]});
+        }).then(function() {
+            return payroll.isPunchedIn.call({from: accounts[4]});
+        }).then(function(isPunchedIn) { 
+            assert.isOk(isPunchedIn, "Expected employee to be punched in but was not.");
+            return payroll.getEmployeeChannelAddress.call(accounts[4]);
+        }).then(function (employeeChannelAddress) {
+            let channelAddress = employeeChannelAddress; 
+            console.log('channel address is ' + channelAddress);           
+            let message = Abi.soliditySHA3(
+                ["address", "uint256"],
+                [channelAddress, 1]
+            );
+    
+            hash = "0x" + message.toString("hex");
+            return web3.eth.sign(
+                accounts[0],
+                hash,
+                function (error, result) {
+                    if (!error) {
+                        signature = result;
+                    }
+                }
+            );
+        }).then(function(){
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            return sleep(1000);
+        }).then(function(){
+            console.log('signature ' + signature);
+            console.log('hash ' + hash);
+
+            return payroll.punchOut(hash,signature,1,{from: accounts[4]});
+        }).then(function(){
+            return payroll.isPunchedIn.call({from: accounts[4]});
+        }).then(function(isPunchedIn) { 
+            assert.isOk(isPunchedIn, "Expected employee to be punched out but was not.");
+        })
+    });
+
+
+
+
 
 });
