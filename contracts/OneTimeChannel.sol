@@ -10,6 +10,7 @@ contract OneTimeChannel is Ownable {
     address paymentReceiverWallet;
     uint expirationDate;
     mapping (bytes32 => address) signatures;
+    bool isClosed;
     
     constructor (address _opener, address _remainingBalanceWallet, address _paymentReceiverWallet, 
                 uint _timeout) 
@@ -18,13 +19,13 @@ contract OneTimeChannel is Ownable {
         remainingBalanceWallet = _remainingBalanceWallet;
         paymentReceiverWallet = _paymentReceiverWallet;
         expirationDate = now + _timeout;
+        isClosed = false;
     }
     
     // SEE: https://github.com/ethereum/solidity/blob/develop/docs/solidity-by-example.rst#micropayment-channel 
     // v used to check which account's private key was used to sign the message, and the transaction's sender
     function closeChannel(bytes32 _hash, bytes _sig, uint value) 
     public onlyOwner {
-
         // get signer from signature
         address signer = getSignerFromHashAndSig(_hash, _sig);
         
@@ -39,6 +40,10 @@ contract OneTimeChannel is Ownable {
         
         require(value <= address(this).balance, "Requested value is greater than this channel's balance");
 
+        // Guard against reentrancy
+        require(isClosed == false, "Channel is already closed");
+        isClosed = true;
+
         paymentReceiverWallet.transfer(value);
         selfdestruct(remainingBalanceWallet);
     }
@@ -46,7 +51,7 @@ contract OneTimeChannel is Ownable {
     function timeOutChannel() 
     public onlyOwner {
         require (expirationDate <= now, "Channel timeout not yet elapsed");
-
+        
         selfdestruct(remainingBalanceWallet);
     }
 

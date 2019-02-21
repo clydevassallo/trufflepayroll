@@ -266,7 +266,7 @@ contract Payroll is Ownable {
     private view
     returns (uint) {
         // Ensure employee is punched in
-        require(employeePunchInTime[_employeeAddress] != 0);
+        require(employeePunchInTime[_employeeAddress] != 0, "Employee is not punched in");
 
         // Consider punch in and current time compared to max value
         uint punchInTime = employeePunchInTime[_employeeAddress];
