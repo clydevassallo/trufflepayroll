@@ -6,5 +6,47 @@ This document highlights the design patterns used in this project and the ration
 
 ## Contract Self Destruction
 
-The OneTimeChannel contract is destroyed whenever a channel is closed by the recipient or timed out by the owner. This 
+### About the pattern
 
+The Contract Self Destruction pattern is used when the expected use of a contract is terminated. Using the selfdestruct() function, the contract refunds all remaining ether in the balance to a target address and reverts all future transaction. Using this pattern is an efficient way to extract money from a contract which should no longer be used as it costs less than other functions used to send ether. Since it frees up space on the blockchain, selfdestructing methods cost negative gas which is reduced from the total cost of the transaction. 
+
+### Usecase
+
+The OneTimeChannel contract is designed to be created whenever an employee punches in and destroyed whenever an employee punches out. On creation, the channel is filled with enough money to pay the employee for the maximum allowed session. In a typical case, upon punch out, ether is still available in the contract and should be returned to the Payroll contract. For this reason, the Contract Self Destruction Pattern was used to destroy the channel and clear funds whenever an employee punches out or a channel is timed out by the employer. Example:
+```
+function timeOutChannel() 
+public onlyOwner {
+    require (expirationDate <= now, "Channel timeout not yet elapsed");    
+    selfdestruct(remainingBalanceWallet);
+}
+```
+
+Ether sent to destroyed payment channels is lost so after calling destructive functions, the Payroll channel removes all references to the destroyed contracts. Example:
+```
+// Attempt to close the channel 
+channels[employeeAddress].closeChannel(_hash, _signature, _value);
+channels[employeeAddress] = OneTimeChannel(0);
+```
+
+## Withdrawal Pattern
+
+### About the pattern
+
+The Withdrawal Pattern is based around the principle of having recipients of payments pull their money out of the contract rather than having the contract push money out to its recipients. Commonly the send() function is used to send ether from a contract to a recipient. Whenever this function is called, if the recipient is another contract, its fallback/default function is called. If this function fails, the function calling the send() is reverted. Such contracts can be exploited by attackers to prevent payments to other recipients. 
+
+With the Withdrawal Pattern, a failing payment to a recipient does not affect other payments, thus safeguarding against these attacks and making the contract more robust. 
+
+### Usecase
+
+In the developed Dapp, the withdrawal pattern was implemented on punch out. Employees initiate there own withdrawal when punching out by closing the payment channel and, if this withdrawal fails, other employees are not affected.
+
+The owner of the payroll is also able to initiate withdrawals from the Payroll contract to extract funds if needed.
+```
+function withdrawFunds(uint amount) 
+public onlyOwner {
+    // Administrator of the payroll can withdraw funds
+    require(amount <= address(this).balance, "Not enough money in Payroll");
+    require(amount > 0, "Withdrawing 0 will have no effect");
+    msg.sender.transfer(amount);
+}
+```

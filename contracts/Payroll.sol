@@ -77,12 +77,14 @@ contract Payroll is Ownable {
     public onlyOwner payable {
         // Used by the administrator to add funds to the payroll.
         // The funds in this contract are considered as a pool to pay employees.
+        require(msg.value > 0, "Withdrawing 0 will have no effect");
     }
 
     function withdrawFunds(uint amount) 
     public onlyOwner {
         // Administrator of the payroll can withdraw funds
-        require(amount <= address(this).balance);
+        require(amount <= address(this).balance, "Not enough money in Payroll");
+        require(amount > 0, "Withdrawing 0 will have no effect");
         msg.sender.transfer(amount);
     }
 
