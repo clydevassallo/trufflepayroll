@@ -156,7 +156,12 @@ contract Payroll is Ownable {
     returns (uint) {
         return getEmployeeMaxSalary(_employeeAddress, _time);
     }
-
+    
+    function getPunchedInTime(address employeeAddress) 
+    public view onlyOwner
+    returns (uint) {
+        return employeePunchInTime[employeeAddress];
+    }
 
     // Callable By Employee //
 
