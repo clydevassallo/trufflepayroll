@@ -17,6 +17,8 @@ contract Payroll is Ownable {
 
     mapping (address => uint) employeePunchInTime;
 
+    /* Events */ 
+
     event HiredEmployee (
         address indexed from,
         uint employeeId
@@ -176,7 +178,6 @@ contract Payroll is Ownable {
         require(address(this).balance >= employeeMaximumSalaryPerDay, "There is not enough money in the payroll. Contact your administrator");
 
         // Set as punched in
-        // TODO should add check again under this if punched in to prevent reentrancy?
         employeePunchInTime[employeeAddress] = now;
         
         /*
