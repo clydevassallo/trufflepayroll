@@ -29,12 +29,12 @@ contract EmployeeContractStorage is Whitelist {
     }
 
     modifier employeeContractExists(address _address) {
-        require(employeeContractsMap[_address] != address(0) && employeeContractsMap[_address].exists == true, "Employee does not exist");
+        require(employeeContractsMap[_address].exists == true, "Employee does not exist");
         _;
     }
 
     modifier employeeContractDoesntExist(address _address) {
-        require(employeeContractsMap[_address] == address(0) || employeeContractsMap[_address].exists == false, "Employee already exists");
+        require(employeeContractsMap[_address].exists == false, "Employee already exists");
         _;
     }
 
