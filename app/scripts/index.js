@@ -77,9 +77,10 @@ const App = {
     solidityEvent.watch(function(error, result){
       if (!error)
       {
-        if (!App.shownEvents[result.transactionHash]) {
-          $('#events-list').append('<li class="list-group-item" style="background-color:navy; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
-          App.shownEvents[result.transactionHash] = true;
+        let key = 'l'+result.logIndex+'t'+result.transactionIndex+'h'+result.transactionHash;
+        if (!App.shownEvents[key]) {
+          $('#events-list').append('<li class="list-group-item" style="background-color:#007bff; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
+          App.shownEvents[key] = true;
           console.log(JSON.stringify(result));
         }
         console.log(JSON.stringify(result));
@@ -204,11 +205,15 @@ const App = {
     }).then(function (employeeChannelAddress) {
       channelAddress = employeeChannelAddress; 
 
+      // Transaction to change state and correctly evalute 'now'
+      return payroll.getEmployeeCurrentMaximumSalary(employeeAddress, {from: web3.eth.accounts[0]});
+    }).then( function() {
+      // Call to get value from previous transaction
       return payroll.getEmployeeCurrentMaximumSalary.call(employeeAddress);
     }).then(function (currentMaximumSalary) {
       let paymentValue = currentMaximumSalary.toString();
       if (channelAddress) {
-        // Generate hash and signature from address and value
+        // Generate hash and signature from address and value 
         console.log('Channel Address is ' + channelAddress);
         let message = abi.soliditySHA3(
             ["address", "uint256"],
@@ -371,7 +376,6 @@ const App = {
 $('#admin-hire-employee-form').on('submit', function (e) {
   e.preventDefault();
 
-  let name = $('#employee-name').val();
   let walletAddress = $('#employee-wallet-address').val();
   let hourlySalary = $('#employee-hourly-salary').val();
   let maxHoursPerSession = $('#employee-max-hours-per-session').val();
@@ -379,12 +383,11 @@ $('#admin-hire-employee-form').on('submit', function (e) {
   let salaryPerSecond = hourlySalary / 3600;
   let maxSecondsPerSession = maxHoursPerSession * 3600;
   
-  console.log('Name ' + name);
   console.log('Wallet Address ' + walletAddress);
   console.log('Hourly Salary ' + hourlySalary);
   console.log('Max Hours Per Session ' + maxHoursPerSession);
   console.log('Salary Per Second ' + salaryPerSecond);
-  console.log('Max Seconds Per Session' + maxSecondsPerSession);
+  console.log('Max Seconds Per Session ' + maxSecondsPerSession);
 
   App.hireEmployee(walletAddress, salaryPerSecond, maxSecondsPerSession);
 })

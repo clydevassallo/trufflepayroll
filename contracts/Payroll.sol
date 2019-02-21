@@ -4,12 +4,14 @@ import "./EmployeeContractStorage.sol";
 import "./OneTimeChannel.sol";
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract Payroll is Ownable {
 
     /* Data Definitions */  
 
     /* Data Storage */ 
+    using SafeMath for uint;
 
     EmployeeContractStorage public employeeContractStorage;
 
@@ -148,7 +150,7 @@ contract Payroll is Ownable {
     }
 
     function getEmployeeCurrentMaximumSalary(address _employeeAddress) 
-    public view onlyOwner
+    public onlyOwner
     returns (uint) {
         require(_employeeAddress != address(0), "Given address is invalid. Points to 0x0.");
         require(isEmployed(_employeeAddress), "Employee is not employed");
@@ -206,7 +208,7 @@ contract Payroll is Ownable {
         */
 
         // Set expiration of channel 1 hour after the maximum allowed hours to give some leniency
-        uint timeoutValue = employeeMaximumSecondsPerSession + 1 hours;
+        uint timeoutValue = employeeMaximumSecondsPerSession.add(1 hours);
 
         // Open the payment channel
         channels[employeeAddress] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerSession)(owner, address(this), employeeAddress, timeoutValue));    
@@ -249,7 +251,7 @@ contract Payroll is Ownable {
     }
 
     function getCurrentMaximumSalary() 
-    public view onlyEmployee
+    public onlyEmployee
     returns (uint) {
         return getEmployeeCurrentMaxSalary(msg.sender);
     }
@@ -262,15 +264,16 @@ contract Payroll is Ownable {
         return employeeContractStorage;
     }
 
+    // Could be marked as view but the now would not be evaluated properly
     function getEmployeeCurrentMaxSalary(address _employeeAddress)
-    private view 
+    private 
     returns (uint) {
         // Ensure employee is punched in
         require(employeePunchInTime[_employeeAddress] != 0);
 
         // Consider punch in and current time compared to max value
         uint punchInTime = employeePunchInTime[_employeeAddress];
-        uint punchedInTime = now - punchInTime;
+        uint punchedInTime = now.sub(punchInTime);
 
         // Get employee maximum seconds per session
         uint maximumSecondsPerSession = getEmployeeContractStorage().readMaximumSecondsPerSession(_employeeAddress);
@@ -287,7 +290,7 @@ contract Payroll is Ownable {
         // The (+ 900) in seconds worked is added to account for the loss in precision of the punchedInTime calculation
         // The (+ 900 Seconds of Salary) was added to account for the lack of precision in the 'now' (+-900s)
         // Note: The employer is very lenient with this calculation
-        uint currrentMaximumSalary = (employeeSalaryPerSecond * (punchedInTime + 900)) + (employeeSalaryPerSecond * 900);        // Validate value
+        uint currrentMaximumSalary = (employeeSalaryPerSecond.mul(punchedInTime.add(900))).add(employeeSalaryPerSecond.mul(900));        // Validate value
 
         return currrentMaximumSalary;
     }
