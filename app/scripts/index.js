@@ -90,12 +90,12 @@ const App = {
   },
 
   /* Administration */ 
-  hireEmployee: function (employeeAccount, hourlySalary, maxHoursPerDay) {
+  hireEmployee: function (employeeAccount, hourlySalary, maxHoursPerSession) {
     let payroll
     Payroll.deployed().then(function (instance) {
       payroll = instance
       return payroll
-      .hireEmployee(employeeAccount, web3.toWei(hourlySalary, "ether"), maxHoursPerDay, 
+      .hireEmployee(employeeAccount, web3.toWei(hourlySalary, "ether"), maxHoursPerSession, 
         {from: web3.eth.accounts[0], gas:180000}
       );
     }).then(function (value) {
@@ -357,18 +357,18 @@ $('#admin-hire-employee-form').on('submit', function (e) {
   e.preventDefault();
 
   /* ====================== Call Solidity Hire Employee ======================= */
-  /* data: address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay */
+  /* data: address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerSession */
   let name = $('#employee-name').val();
   let walletAddress = $('#employee-wallet-address').val();
   let hourlySalary = $('#employee-hourly-salary').val();
-  let maxHoursPerDay = $('#employee-max-hours-per-day').val();
+  let maxHoursPerSession = $('#employee-max-hours-per-session').val();
   
   console.log(name);
   console.log(walletAddress);
   console.log(hourlySalary);
-  console.log(maxHoursPerDay);
+  console.log(maxHoursPerSession);
 
-  App.hireEmployee(walletAddress, hourlySalary, maxHoursPerDay);
+  App.hireEmployee(walletAddress, hourlySalary, maxHoursPerSession);
 })
 
 $('#admin-count-employees-text').on('show.bs.collapse', function(e) {
@@ -435,7 +435,7 @@ $('#employee-punch-out-form').on('submit', function (e) {
   e.preventDefault();
 
   /* ====================== Call Solidity Hire Employee ======================= */
-  /* data: address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay */
+  /* data: address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerSession */
   let hash = $('#employee-punch-out-hash').val();
   let signature = $('#employee-punch-out-signature').val();
   let value = $('#employee-punch-out-value').val();

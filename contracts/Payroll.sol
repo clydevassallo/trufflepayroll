@@ -107,13 +107,13 @@ contract Payroll is Ownable {
         channels[_employeeAddress] = OneTimeChannel(0);
     }
 
-    function hireEmployee(address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerDay)
+    function hireEmployee(address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerSession)
     public onlyOwner 
     returns (uint) {
         require(_incomeAccount != address(0), "Given address is invalid. Points to 0x0.");
 
         // Create the employee in storage. Storage handles validation for duplicates
-        uint employeeId = getEmployeeContractStorage().createEmployeeContract(_incomeAccount, _hourlySalary, _maximumHoursPerDay);
+        uint employeeId = getEmployeeContractStorage().createEmployeeContract(_incomeAccount, _hourlySalary, _maximumHoursPerSession);
 
         // Emit event to signal the creation of a new employee
         emit HiredEmployee(msg.sender, employeeId);
@@ -167,15 +167,15 @@ contract Payroll is Ownable {
         // Get Salary Per Hour 
         uint employeeSalaryPerHour = getEmployeeContractStorage().readHourlySalary(employeeAddress);
 
-        // Get Maximum Hours Per Day
-        uint employeeMaximumHoursPerDay = getEmployeeContractStorage().readMaximumHoursPerDay(employeeAddress);
+        // Get Maximum Hours Per Session
+        uint employeeMaximumHoursPerSession = getEmployeeContractStorage().readMaximumHoursPerSession(employeeAddress);
         
-        // Calculate maximum salary for day
-        uint employeeMaximumSalaryPerDay = employeeSalaryPerHour * employeeMaximumHoursPerDay;
+        // Calculate maximum salary for session
+        uint employeeMaximumSalaryPerSession = employeeSalaryPerHour * employeeMaximumHoursPerSession;
 
         // Ensure there is enough money in the payroll to pay the maximum salary
         // TODO should add padding for costs?
-        require(address(this).balance >= employeeMaximumSalaryPerDay, "There is not enough money in the payroll. Contact your administrator");
+        require(address(this).balance >= employeeMaximumSalaryPerSession, "There is not enough money in the payroll. Contact your administrator");
 
         // Set as punched in
         employeePunchInTime[employeeAddress] = now;
@@ -197,10 +197,10 @@ contract Payroll is Ownable {
         */
 
         // Set expiration of channel 1 hour after the maximum allowed hours to give some leniency
-        uint timeoutValue = employeeMaximumHoursPerDay + 1 hours;
+        uint timeoutValue = employeeMaximumHoursPerSession + 1 hours;
 
         // Open the payment channel
-        channels[employeeAddress] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerDay)(owner, address(this), employeeAddress, timeoutValue));    
+        channels[employeeAddress] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerSession)(owner, address(this), employeeAddress, timeoutValue));    
 
         emit PunchIn(msg.sender);
     }
