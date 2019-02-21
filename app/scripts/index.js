@@ -90,12 +90,12 @@ const App = {
   },
 
   /* Administration */ 
-  hireEmployee: function (employeeAccount, hourlySalary, maxHoursPerSession) {
+  hireEmployee: function (employeeAccount, salaryPerSecond, maxSecondsPerSession) {
     let payroll
     Payroll.deployed().then(function (instance) {
       payroll = instance
       return payroll
-      .hireEmployee(employeeAccount, web3.toWei(hourlySalary, "ether"), maxHoursPerSession, 
+      .hireEmployee(employeeAccount, web3.toWei(salaryPerSecond, "ether"), maxSecondsPerSession, 
         {from: web3.eth.accounts[0], gas:180000}
       );
     }).then(function (value) {
@@ -251,7 +251,7 @@ const App = {
     let payroll
     Payroll.deployed().then(function (instance) {
       payroll = instance;
-      return payroll.releaseChannel(walletAddress, {from: web3.eth.accounts[0], gas:25000});
+      return payroll.releaseChannel(walletAddress, {from: web3.eth.accounts[0], gas:50000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
@@ -356,19 +356,22 @@ const App = {
 $('#admin-hire-employee-form').on('submit', function (e) {
   e.preventDefault();
 
-  /* ====================== Call Solidity Hire Employee ======================= */
-  /* data: address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerSession */
   let name = $('#employee-name').val();
   let walletAddress = $('#employee-wallet-address').val();
   let hourlySalary = $('#employee-hourly-salary').val();
   let maxHoursPerSession = $('#employee-max-hours-per-session').val();
   
-  console.log(name);
-  console.log(walletAddress);
-  console.log(hourlySalary);
-  console.log(maxHoursPerSession);
+  let salaryPerSecond = hourlySalary / 3600;
+  let maxSecondsPerSession = maxHoursPerSession * 3600;
+  
+  console.log('Name ' + name);
+  console.log('Wallet Address ' + walletAddress);
+  console.log('Hourly Salary ' + hourlySalary);
+  console.log('Max Hours Per Session ' + maxHoursPerSession);
+  console.log('Salary Per Second ' + salaryPerSecond);
+  console.log('Max Seconds Per Session' + maxSecondsPerSession);
 
-  App.hireEmployee(walletAddress, hourlySalary, maxHoursPerSession);
+  App.hireEmployee(walletAddress, salaryPerSecond, maxSecondsPerSession);
 })
 
 $('#admin-count-employees-text').on('show.bs.collapse', function(e) {

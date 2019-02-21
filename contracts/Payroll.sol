@@ -107,13 +107,13 @@ contract Payroll is Ownable {
         channels[_employeeAddress] = OneTimeChannel(0);
     }
 
-    function hireEmployee(address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerSession)
+    function hireEmployee(address _incomeAccount, uint _salaryPerSecond, uint _maximumSecondsPerSession)
     public onlyOwner 
     returns (uint) {
         require(_incomeAccount != address(0), "Given address is invalid. Points to 0x0.");
 
         // Create the employee in storage. Storage handles validation for duplicates
-        uint employeeId = getEmployeeContractStorage().createEmployeeContract(_incomeAccount, _hourlySalary, _maximumHoursPerSession);
+        uint employeeId = getEmployeeContractStorage().createEmployeeContract(_incomeAccount, _salaryPerSecond, _maximumSecondsPerSession);
 
         // Emit event to signal the creation of a new employee
         emit HiredEmployee(msg.sender, employeeId);
@@ -147,6 +147,16 @@ contract Payroll is Ownable {
         return channelAddress;
     }
 
+    function getCurrentMaximumSalary(address _employeeAddress) 
+    public view onlyOwner
+    returns (uint) {
+        require(_employeeAddress != address(0), "Given address is invalid. Points to 0x0.");
+        require(isEmployed(_employeeAddress), "Employee is not employed");
+        
+        return getEmployeeCurrentMaximumSalary(_employeeAddress);
+    }
+
+
     // Callable By Employee //
 
     function punchIn() 
@@ -164,17 +174,16 @@ contract Payroll is Ownable {
             Get required information to validate and open channel
         */
 
-        // Get Salary Per Hour 
-        uint employeeSalaryPerHour = getEmployeeContractStorage().readHourlySalary(employeeAddress);
+        // Get Salary Per Second 
+        uint employeeSalaryPerSecond = getEmployeeContractStorage().readSalaryPerSecond(employeeAddress);
 
-        // Get Maximum Hours Per Session
-        uint employeeMaximumHoursPerSession = getEmployeeContractStorage().readMaximumHoursPerSession(employeeAddress);
+        // Get Maximum Seconds Per Session
+        uint employeeMaximumSecondsPerSession = getEmployeeContractStorage().readMaximumSecondsPerSession(employeeAddress);
         
         // Calculate maximum salary for session
-        uint employeeMaximumSalaryPerSession = employeeSalaryPerHour * employeeMaximumHoursPerSession;
+        uint employeeMaximumSalaryPerSession = employeeSalaryPerSecond * employeeMaximumSecondsPerSession;
 
         // Ensure there is enough money in the payroll to pay the maximum salary
-        // TODO should add padding for costs?
         require(address(this).balance >= employeeMaximumSalaryPerSession, "There is not enough money in the payroll. Contact your administrator");
 
         // Set as punched in
@@ -197,7 +206,7 @@ contract Payroll is Ownable {
         */
 
         // Set expiration of channel 1 hour after the maximum allowed hours to give some leniency
-        uint timeoutValue = employeeMaximumHoursPerSession + 1 hours;
+        uint timeoutValue = employeeMaximumSecondsPerSession + 1 hours;
 
         // Open the payment channel
         channels[employeeAddress] = OneTimeChannel((new OneTimeChannel).value(employeeMaximumSalaryPerSession)(owner, address(this), employeeAddress, timeoutValue));    
@@ -213,34 +222,16 @@ contract Payroll is Ownable {
 
     function punchOut(bytes32 _hash, bytes _signature, uint _value) 
     public onlyEmployee {
-        // Get employeeAddress
+        // Get employee maximum salary for session (reverts if not punched in).
+        uint maximumSalary = getCurrentMaximumSalary();
+
+        require(_value <= maximumSalary, "The amount being claimed with punch out is higher than the maximum salary for the session. Ask employer to issue another signed managed with the correct salary if not available.");
+
         address employeeAddress = msg.sender;
-
-        // Ensure employee is punched in and punch out
-        // TODO check for reentrancy
-        require(employeePunchInTime[employeeAddress] != 0);
-
-        // Consider punch in and current time compared to max value
-        uint punchInTime = employeePunchInTime[employeeAddress];
-        uint punchedInSeconds = now - punchInTime;
-        uint punchedInHours = punchedInSeconds / 1 hours;
-
+        
         // Set employee punch in time to 0 to indicate punched out
         employeePunchInTime[employeeAddress] = 0;
 
-        // Get Salary Per Hour 
-        uint employeeSalaryPerHour = getEmployeeContractStorage().readHourlySalary(employeeAddress);
-
-        // Calculate Maximum Salary
-        // HourlySalary * (HoursWorked + 1)) + HalfHourlySalary
-        // The (+ 1) in hours worked is added to account for the loss in precision of the punchedInHours calculation
-        // The (+ HalfHourlySalary) was added to account for the lack of precision in the 'now' (+-900s)
-        // Note: The employer is very lenient with this calculation
-        uint maximumSalary = (employeeSalaryPerHour * (punchedInHours + 1)) + (employeeSalaryPerHour / 2);
-
-        // Validate value
-        require(_value <= maximumSalary, "The amount being claimed with punch out is higher than the maximum salary for the session. Ask employer to issue another signed managed with the correct salary if not available.");
-        
         // Attempt to close the channel 
         channels[employeeAddress].closeChannel(_hash, _signature, _value);
         channels[employeeAddress] = OneTimeChannel(0);
@@ -257,7 +248,13 @@ contract Payroll is Ownable {
         return employeePunchInTime[employeeAddress] > 0;
     }
 
-    /* Private functions */
+    function getCurrentMaximumSalary() 
+    public view onlyEmployee
+    returns (uint) {
+        return getEmployeeCurrentMaximumSalary(msg.sender);
+    }
+
+    /* Private Functions */
 
     function getEmployeeContractStorage() 
     private view externalStorageSet
@@ -265,7 +262,39 @@ contract Payroll is Ownable {
         return employeeContractStorage;
     }
 
-    // default fn
+    function getEmployeeCurrentMaximumSalary(address _employeeAddress)
+    private view 
+    returns (uint) {
+        // Ensure employee is punched in
+        require(employeePunchInTime[_employeeAddress] != 0);
+
+        // Consider punch in and current time compared to max value
+        uint punchInTime = employeePunchInTime[_employeeAddress];
+        uint punchedInTime = now - punchInTime;
+
+        // Get employee maximum seconds per session
+        uint maximumSecondsPerSession = getEmployeeContractStorage().readMaximumSecondsPerSession(_employeeAddress);
+
+        // If punchedInTime > limit, set the punchedInTime to limit
+        if (punchedInTime > maximumSecondsPerSession) {
+            punchedInTime = maximumSecondsPerSession;
+        }
+        // Get Salary Per Second 
+        uint employeeSalaryPerSecond = getEmployeeContractStorage().readSalaryPerSecond(_employeeAddress);
+
+        // Calculate Maximum Salary
+        // SalaryPerSecond * (SecondsWork + 900)) + (900 Seconds of Salary)
+        // The (+ 900) in seconds worked is added to account for the loss in precision of the punchedInTime calculation
+        // The (+ 900 Seconds of Salary) was added to account for the lack of precision in the 'now' (+-900s)
+        // Note: The employer is very lenient with this calculation
+        uint currrentMaximumSalary = (employeeSalaryPerSecond * (punchedInTime + 900)) + (employeeSalaryPerSecond * 900);        // Validate value
+
+        return currrentMaximumSalary;
+    }
+
+
+    /* Default Function */
+
     function() public payable {
         
     }

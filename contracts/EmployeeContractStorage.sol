@@ -8,8 +8,8 @@ contract EmployeeContractStorage is Whitelist {
 
     struct EmployeeContract {
         bool exists;
-        uint hourlySalary;
-        uint maximumHoursPerSession;
+        uint salaryPerSecond;
+        uint maximumSecondsPerSession;
     }
 
     /* Data Storage */ 
@@ -37,8 +37,8 @@ contract EmployeeContractStorage is Whitelist {
     event EmployeeContractCreation (
         address indexed _from,
         address incomeAccount,
-        uint hourlySalary,
-        uint maximumHoursPerSession
+        uint salaryPerSecond,
+        uint maximumSecondsPerSession
     );
 
     /* Constructor */ 
@@ -49,7 +49,7 @@ contract EmployeeContractStorage is Whitelist {
 
     /* Functions */
 
-    function createEmployeeContract(address _incomeAccount, uint _hourlySalary, uint _maximumHoursPerSession) 
+    function createEmployeeContract(address _incomeAccount, uint _salaryPerSecond, uint _maximumSecondsPerSession) 
     public onlyIfSenderWhitelisted
     returns (uint) {
 
@@ -58,44 +58,44 @@ contract EmployeeContractStorage is Whitelist {
 
         // Populate Employee Contract structure in map
         employeeContractsMap[_incomeAccount].exists = true;
-        employeeContractsMap[_incomeAccount].hourlySalary = _hourlySalary;
-        employeeContractsMap[_incomeAccount].maximumHoursPerSession = _maximumHoursPerSession;
+        employeeContractsMap[_incomeAccount].salaryPerSecond = _salaryPerSecond;
+        employeeContractsMap[_incomeAccount].maximumSecondsPerSession = _maximumSecondsPerSession;
 
         // Increment employee counter
         employeeCounter++;
 
         // Fire event
-        emit EmployeeContractCreation(msg.sender, _incomeAccount, employeeContractsMap[_incomeAccount].hourlySalary, employeeContractsMap[_incomeAccount].maximumHoursPerSession);
+        emit EmployeeContractCreation(msg.sender, _incomeAccount, employeeContractsMap[_incomeAccount].salaryPerSecond, employeeContractsMap[_incomeAccount].maximumSecondsPerSession);
 
         return employeeCounter;
     }
 
-    // Setter for Hourly Salary
-    function updateHourlySalary(address _employeeAddress, uint _hourlySalary)
+    // Setter for Salary Per Second
+    function updateSalaryPerSecond(address _employeeAddress, uint _salaryPerSecond)
     public onlyIfSenderWhitelisted employeeContractExists(_employeeAddress) {
-        employeeContractsMap[_employeeAddress].hourlySalary = _hourlySalary;
+        employeeContractsMap[_employeeAddress].salaryPerSecond = _salaryPerSecond;
     }
 
-    // Setter for Max Hours Per Session
-    function updateMaximumHoursPerSession(address _employeeAddress, uint _maximumHoursPerSession)
+    // Setter for Max Second Per Session
+    function updateMaximumSecondsPerSession(address _employeeAddress, uint _maximumSecondsPerSession)
     public onlyIfSenderWhitelisted employeeContractExists(_employeeAddress) {
-        employeeContractsMap[_employeeAddress].maximumHoursPerSession = _maximumHoursPerSession;       
+        employeeContractsMap[_employeeAddress].maximumSecondsPerSession = _maximumSecondsPerSession;       
     }
 
-    // Getter for Hourly Salary
-    function readHourlySalary(address _employeeAddress) 
+    // Getter for Salary Per Second
+    function readSalaryPerSecond(address _employeeAddress) 
     public employeeContractExists(_employeeAddress)
     view
     returns (uint) {
-        return employeeContractsMap[_employeeAddress].hourlySalary;
+        return employeeContractsMap[_employeeAddress].salaryPerSecond;
     }
 
-    // Getter for Max Hours Per Session
-    function readMaximumHoursPerSession(address _employeeAddress) 
+    // Getter for Max Seconds Per Session
+    function readMaximumSecondsPerSession(address _employeeAddress) 
     public employeeContractExists(_employeeAddress)
     view
     returns (uint) {
-        return employeeContractsMap[_employeeAddress].maximumHoursPerSession;
+        return employeeContractsMap[_employeeAddress].maximumSecondsPerSession;
     }
 
     function getNumberOfEmployees() 
