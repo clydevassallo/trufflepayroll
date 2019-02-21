@@ -22,12 +22,15 @@ const App = {
   
   start: function () {
     const self = this;
+
+    // Keep track of shown events to prevent displaying them multiple times 
     App.shownEvents = new Object();
 
     // Bootstrap the EmployeeContractStorage abstraction for Use.
     EmployeeContractStorage.setProvider(web3.currentProvider);
     Payroll.setProvider(web3.currentProvider);
 
+    // Load accounts with a delay to ensure the web3 provider is injected
     setTimeout(() => {
       web3.eth.getAccounts((err, accs) => {
         if (err != null) {
@@ -47,6 +50,7 @@ const App = {
       })
     }, 1000)
 
+    // Reload page on account change
     setInterval(function() {
       if (web3.eth.accounts[0] !== App.account) {
         App.account = web3.eth.accounts[0];
@@ -54,74 +58,35 @@ const App = {
       }
     }, 2000);
 
+    // Listen to EmployeeContractStorage Events
     EmployeeContractStorage.deployed().then(function (instance) {
       let employeeContractStorage = instance
-      employeeContractStorage.EmployeeContractCreation({fromBlock: 'latest'}).watch(function(error, result){
-        if (!error)
-        {
-          if (!App.shownEvents[result.transactionHash]) {
-            $('#events-list').append('<li class="list-group-item" style="background-color:navy; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
-            App.shownEvents[result.transactionHash] = true;
-            console.log(JSON.stringify(result));
-          }
-        } else {
-          console.log(error);
-        }
-      }); 
+      App.listenToEvent(employeeContractStorage.EmployeeContractCreation({fromBlock: 'latest'}));
     });
 
-    let payroll;
+    // Listen to Payroll Events
     Payroll.deployed().then(function (instance) {
-      payroll = instance
-      return payroll.getOwner.call({from: web3.eth.accounts[0]})
-    }).then(function (owner) {
-      console.log('Owner of payroll is ' + owner);
-      payroll.HiredEmployee({fromBlock: 'latest'}).watch(function(error, result){
-        if (!error)
-        {
-          if (!App.shownEvents[result.transactionHash]) {
-            $('#events-list').append('<li class="list-group-item" style="background-color:navy; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
-            App.shownEvents[result.transactionHash] = true;
-            console.log(JSON.stringify(result));
-          }
-          console.log(JSON.stringify(result));
-        } else {
-          console.log(error);
-        }
-      }); 
+      let payroll = instance
+      App.listenToEvent(payroll.HiredEmployee({fromBlock: 'latest'}));
+      App.listenToEvent(payroll.PunchIn({fromBlock: 'latest'}));
+      App.listenToEvent(payroll.PunchOut({fromBlock: 'latest'}));
     });
+  },
 
-    Payroll.deployed().then(function (instance) {
-      let payroll = instance;
-      payroll.PunchIn({fromBlock: 'latest'}).watch(function(error, result){
-        if (!error)
-        {
-          if (!App.shownEvents[result.transactionHash]) {
-            $('#events-list').append('<li class="list-group-item" style="background-color:navy; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
-            App.shownEvents[result.transactionHash] = true;
-            console.log(JSON.stringify(result));
-          }
+  listenToEvent: function(solidityEvent) {
+    solidityEvent.watch(function(error, result){
+      if (!error)
+      {
+        if (!App.shownEvents[result.transactionHash]) {
+          $('#events-list').append('<li class="list-group-item" style="background-color:navy; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
+          App.shownEvents[result.transactionHash] = true;
           console.log(JSON.stringify(result));
-        } else {
-          console.log(error);
         }
-      }); 
-
-      payroll.PunchOut({fromBlock: 'latest'}).watch(function(error, result){
-        if (!error)
-        {
-          if (!App.shownEvents[result.transactionHash]) {
-            $('#events-list').append('<li class="list-group-item" style="background-color:navy; color: white; width: 100%">'+result.event+': '+ JSON.stringify(result.args)+'</li>');
-            App.shownEvents[result.transactionHash] = true;
-            console.log(JSON.stringify(result));
-          }
-          console.log(JSON.stringify(result));
-        } else {
-          console.log(error);
-        }
-      }); 
+        console.log(JSON.stringify(result));
+      } else {
+        console.log(error);
+      }
     });
-    
   },
 
   /* Administration */ 
@@ -286,7 +251,7 @@ const App = {
     let payroll
     Payroll.deployed().then(function (instance) {
       payroll = instance;
-      return payroll.releaseChannel(walletAddress, {from: web3.eth.accounts[0], gas:1000000});
+      return payroll.releaseChannel(walletAddress, {from: web3.eth.accounts[0], gas:25000});
     }).then(function (value) {
       Swal.fire({
         position: 'top-end',
@@ -388,10 +353,6 @@ const App = {
 
 /* Administration Event Listeners */
 
-$('#admin-hire-employee').on('click', function (e) {
-  console.log("CLICKED HIRE EMPLOYEE");
-})
-
 $('#admin-hire-employee-form').on('submit', function (e) {
   e.preventDefault();
 
@@ -467,7 +428,6 @@ $('#employee-is-punched-in-text').on('show.bs.collapse', function(e) {
 })
 
 $('#employee-punch-in').on('click', function (e) {
-  console.log("Punching in....");
   App.punchIn();
 })
 
@@ -479,10 +439,6 @@ $('#employee-punch-out-form').on('submit', function (e) {
   let hash = $('#employee-punch-out-hash').val();
   let signature = $('#employee-punch-out-signature').val();
   let value = $('#employee-punch-out-value').val();
-
-  console.log(hash);
-  console.log(signature);
-  console.log(value);
 
   App.punchOut(hash, signature, value);
 })
