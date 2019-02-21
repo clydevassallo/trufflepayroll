@@ -223,9 +223,13 @@ contract Payroll is Ownable {
 
     function punchOut(bytes32 _hash, bytes _signature, uint _value) 
     public onlyEmployee {
-        // Get employee maximum salary for session (reverts if not punched in).
-        uint maximumSalary = getCurrentMaximumSalary();
+        uint employeeSalaryPerSecond = getEmployeeContractStorage().readSalaryPerSecond(msg.sender);
 
+        // Get employee maximum salary for session (reverts if not punched in).
+        // A 1min tolerance was added to account for inaccuracy of 'now'
+        uint maximumSalary = getCurrentMaximumSalary().add(employeeSalaryPerSecond.mul(60));
+
+        // Verify value of time provider by employer when calculating payment value
         require(_value <= maximumSalary, "The amount being claimed with punch out is higher than the maximum salary for the session. Ask employer to issue another signed managed with the correct salary if not available.");
 
         address employeeAddress = msg.sender;
@@ -285,10 +289,7 @@ contract Payroll is Ownable {
         uint employeeSalaryPerSecond = getEmployeeContractStorage().readSalaryPerSecond(_employeeAddress);
 
         // Calculate Maximum Salary
-        // SalaryPerSecond * (SecondsWork + 900)
-        // The (+ 900) in seconds worked is added to account for the loss in precision of the punchedInTime calculation
-        // Note: The employer is very lenient with this calculation
-        uint currrentMaximumSalary = (employeeSalaryPerSecond.mul(punchedInTime.add(900)));
+        uint currrentMaximumSalary = employeeSalaryPerSecond.mul(punchedInTime);
 
         return currrentMaximumSalary;
     }

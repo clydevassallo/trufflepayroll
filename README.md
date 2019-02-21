@@ -1,11 +1,6 @@
 # Truffle Payroll
 
-Truffle Payroll is an HR payroll system running on Ethereum. The main aim of the system is to reduce the risk for employees when it comes to getting paid for their work. With traditional payroll systems, employees are paid on a monthly basis without any strong guarantee that the employer will pay in full and on time. These systems are characterised by 2 limitations that Truffle Payroll aims to address: 
-
- 1. Employees give value to their employer on a daily basis, however, they are paid only paid after a whole month of work. Ideally, employees are paid constantly as they give value to their employers. The frequency on payment would also reduce the risk to which employees are exposed in terms of not getting paid.
- 2. Employees are forced to trust that the employer has enough money to pay their salary.
-
-In order to overcome these limitations, Truffle Payroll provides a way by which employees can be paid daily according to the amount of hours worked. On punch in, the maximum possible salary for the day is withdrawn from the employer's Payroll contract and stored in a Payment Channel contract. For every hour worked, the employee is issued a hash and signature from the employer. On punch out, the employee will use the latest pair of hash and signature received to claim the owed funds for the day, depending on the number of hours worked. When a punch out is successful, the Payment Channel is closed and the contract selfdestructed, returing the rest of the funds, if any, to the Payroll contract.
+Truffle Payroll is an HR payroll system running on Ethereum. 
 
 At its current state, Truffle Payroll enables employers to:
  * Hire new employees
