@@ -69,7 +69,11 @@ Other security measures taken to ensure that the Dapp is not compromised by mali
 
 ## Access Control
 
+All exposed functions in the Dapp were guarded with function modifiers ensuring that the caller is allowed to called the specified function. Administration functions in the Payroll contract can only be called by the Payroll owner (the creator of the contract). This was implemented using openzeppelin's Ownable contract. On the other hand, the punchIn and punchOut functions were guarded using a custom function modifier which ensures that the caller is an employee. This is done by comparing the contract address to the employees mapping found in the EmployeeContractStorage. 
 
+The functions in the EmployeeContractStorage contract are protected through a whitelist. The contract was designed to storage data on contracts with employees are can potentially be accessed by other contracts in the future, whether they are newer versions of the Payroll contract or new contracts operating on this data. Using openzepplin's Whitelist contract, the owner of the storage contract (its creator) can add new contracts requiring access to the whitelist. Upon deployment, the Payroll contract is added automatically to this whitelist.
+
+Lastly, the Payroll contract created new OneTimeChannel contracts and is the owner contract allowed to interact with them being their owner. With such an access control system, the responsiblity of differentiating which channel functions can be called by the administrator and which can be called by the employee was delegated to the Payroll contract.
 
 ## Function Visibilities
 
