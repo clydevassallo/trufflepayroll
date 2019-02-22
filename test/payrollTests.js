@@ -112,68 +112,6 @@ contract('Payroll', function (accounts) {
         });
     });
 
-    // it('should allow employees to punch out', function() {
-    //     let payroll
-    //     let hash
-    //     let signature
-    //     let message
-    //     let owner
-    //     return Payroll
-    //     .deployed()
-    //     .then(function (instance) {
-    //         payroll = instance;
-    //         return payroll.getOwner.call();
-    //     }).then(function(_owner){
-    //         owner = _owner;
-    //         console.log('owner is '+ owner);
-    //         console.log('account0 is ' + accounts[0]);
-    //         console.log('web3 accounts 0 is ' + web3.eth.accounts[0]);
-    //         return payroll.getBalance.call();
-    //     }).then(function(balance) {
-    //         return payroll.hireEmployee(accounts[4], balance/4, 2);
-    //     }).then(function() {
-    //         return payroll.punchIn({from: accounts[4]});
-    //     }).then(function() {
-    //         return payroll.isPunchedIn.call({from: accounts[4]});
-    //     }).then(function(isPunchedIn) { 
-    //         assert.isOk(isPunchedIn, "Expected employee to be punched in but was not.");
-    //         return payroll.getEmployeeChannelAddress.call(accounts[4]);
-    //     }).then(function (employeeChannelAddress) {
-    //         let channelAddress = employeeChannelAddress; 
-    //         console.log('channel address is ' + channelAddress);           
-    //         message = Abi.soliditySHA3(
-    //             ["address", "uint256"],
-    //             ['0x123', 1]
-    //         );
-    
-    //         hash = "0x" + message.toString("hex");
-    //         return web3.eth.sign(
-    //             owner,
-    //             hash,
-    //             function (error, result) {
-    //                 if (!error) {
-    //                     signature = result;
-    //                     console.log(signature);
-    //                 }
-    //             }
-    //         );
-    //     }).then(function(){
-    //         function sleep(ms) {
-    //             return new Promise(resolve => setTimeout(resolve, ms));
-    //         }
-    //         return sleep(1000);
-    //     }).then(function(){
-    //         console.log('signature ' + signature);
-    //         console.log('hash ' + hash);
-
-    //         return payroll.punchOut(hash, signature, 1, {from: accounts[4]});
-    //     }).then(function(){
-    //         return payroll.isPunchedIn.call({from: accounts[4]});
-    //     }).then(function(isPunchedIn) { 
-    //         assert.isOk(isPunchedIn, "Expected employee to be punched out but was not.");
-    //     })
-    // });
-
     it('should get maximum salary within session limit', function() {
         let payroll
         let sessionLimit
@@ -206,7 +144,7 @@ contract('Payroll', function (accounts) {
         })
     });
 
-    it('should get maximum salary within session limit', function() {
+    it('should get expected salary', function() {
         let payroll
         let punchedInTime
         let expectedSalary
@@ -243,6 +181,75 @@ contract('Payroll', function (accounts) {
             assert.equal(currentMaximumSalary, expectedSalary);
         })
     });
+
+    /*
+        Unfortunately the test below is not working as I am encountering problems when 
+        signing the message here even though the same signing method works in the application.
+        I tried various different things including using ethereumjs-util to sign the message with 
+        no luck. Due to this problem, tests for punch out could not be automated.    
+    */    
+
+    // it('should allow employees to punch out', function() {
+    //     let payroll
+    //     let hash
+    //     let signature
+    //     let message
+    //     let owner
+    //     return Payroll
+    //     .deployed()
+    //     .then(function (instance) {
+    //         payroll = instance;
+    //         return payroll.getOwner.call();
+    //     }).then(function(_owner){
+    //         owner = _owner;
+    //         console.log('owner is '+ owner);
+    //         console.log('account0 is ' + accounts[0]);
+    //         console.log('web3 accounts 0 is ' + web3.eth.accounts[0]);
+    //         return payroll.getBalance.call();
+    //     }).then(function(balance) {
+    //         return payroll.hireEmployee(accounts[6], balance/4, 2);
+    //     }).then(function() {
+    //         return payroll.punchIn({from: accounts[6]});
+    //     }).then(function() {
+    //         return payroll.isPunchedIn.call({from: accounts[6]});
+    //     }).then(function(isPunchedIn) { 
+    //         assert.isOk(isPunchedIn, "Expected employee to be punched in but was not.");
+    //         return payroll.getEmployeeChannelAddress.call(accounts[6]);
+    //     }).then(function (employeeChannelAddress) {
+    //         let channelAddress = employeeChannelAddress; 
+    //         console.log('channel address is ' + channelAddress);           
+    //         message = Abi.soliditySHA3(
+    //             ["address", "uint256"],
+    //             [channelAddress, 1]
+    //         );
+    
+    //         hash = "0x" + message.toString("hex");
+    //         return web3.eth.sign(
+    //             owner,
+    //             hash,
+    //             function (error, result) {
+    //                 if (!error) {
+    //                     signature = result;
+    //                     console.log(signature);
+    //                 }
+    //             }
+    //         );
+    //     }).then(function(){
+    //         function sleep(ms) {
+    //             return new Promise(resolve => setTimeout(resolve, ms));
+    //         }
+    //         return sleep(1000);
+    //     }).then(function(){
+    //         console.log('signature ' + signature);
+    //         console.log('hash ' + hash);
+
+    //         return payroll.punchOut(hash, signature, 1, {from: accounts[6]});
+    //     }).then(function(){
+    //         return payroll.isPunchedIn.call({from: accounts[6]});
+    //     }).then(function(isPunchedIn) { 
+    //         assert.isOk(isPunchedIn, "Expected employee to be punched out but was not.");
+    //     })
+    // });
 
 
 

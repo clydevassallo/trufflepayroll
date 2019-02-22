@@ -196,6 +196,33 @@ const App = {
     })  
   },
 
+  withdrawFromPayroll: function(amountToWithdraw) {
+    let payroll
+    Payroll.deployed().then(function (instance) {
+      payroll = instance
+      return payroll.withdrawFunds({from: web3.eth.accounts[0], value: web3.toWei(amountToDeposit, "ether"), gas:25000});
+    }).then(function (value) {
+      Swal.fire({
+        position: 'top-end',
+        type: 'success',
+        title: 'Funds were successfully withdrawn!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
+    }).catch(function (e) {
+      console.log(e);
+      Swal.fire({
+        position: 'top-end',
+        type: 'error',
+        title: 'Failed to withdraw funds!',
+        showConfirmButton: false,
+        timer: 1500,
+        width: 300
+      });
+    })  
+  },
+
   generateHashAndSignature: function(employeeAddress) {
     let payroll;
     let channelAddress;
@@ -203,7 +230,7 @@ const App = {
       payroll = instance
       return payroll.getEmployeeChannelAddress.call(employeeAddress);
     }).then(function (employeeChannelAddress) {
-      channelAddress = employeeChannelAddress; 
+      channelAddress = employeeChannelAddress;  
 
       // Get maximum salary based on current time 
       let currentTimestamp = ~~(Date.now() / 1000)
@@ -416,6 +443,16 @@ $('#admin-deposit-payroll-form').on('submit', function (e) {
   console.log(amountToDeposit);
 
   App.depositInPayroll(amountToDeposit);
+})
+
+$('#admin-withdraw-payroll-form').on('submit', function (e) {
+  e.preventDefault();
+
+  let amountToWithdraw = $('#amount-to-withdraw').val();
+
+  console.log(amountToWithdraw);
+
+  App.withdrawFromPayroll(amountToWithdraw);
 })
 
 $('#admin-generate-signature-form').on('submit', function (e) {

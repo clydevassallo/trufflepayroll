@@ -55,16 +55,15 @@ contract OneTimeChannel is Ownable {
         selfdestruct(remainingBalanceWallet);
     }
 
-    function getSignerFromHashAndSig(bytes32 _hash, bytes _sig) 
-    private pure
-    returns (address) {
-        return ECRecovery.recover(_hash,_sig);
-    }
-
     function getChannelParties(bytes32 _hash, bytes _sig) 
     public view
     returns (address,address,address,address) {
         return (getSignerFromHashAndSig(_hash,_sig),channelOpener,paymentReceiverWallet,remainingBalanceWallet);
     }
-
+    
+    function getSignerFromHashAndSig(bytes32 _hash, bytes _sig) 
+    private pure
+    returns (address) {
+        return ECRecovery.recover(_hash,_sig);
+    }
 }

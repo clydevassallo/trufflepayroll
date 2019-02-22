@@ -11,15 +11,15 @@
 </head>
 <body>
   <h2>Hello <span id="current-account"></span></h2>
-  <div style="background-color:bisque" class="container-fluid">
+  <div style="background-color:white" class="container-fluid">
     <h2>Administration</h2>
     <div style="background-color:white" class="row">
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
           <button id="admin-hire-employee" type="button" class="btn btn-primary" data-target="#admin-hire-employee-form" data-toggle="collapse">
             Hire New Employee
           </button>
         </div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
             <form id="admin-hire-employee-form" class="collapse" >
               <div class="form-group">
                 <label for="employee-wallet-address">Wallet Address</label>
@@ -37,22 +37,22 @@
             </form>  
         </div>
         <div class="w-100"></div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
           <button id="admin-count-employees" type="button" class="btn btn-primary" data-target="#admin-count-employees-text" data-toggle="collapse">
             Count Employees
           </button>
         </div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
           <div id="admin-count-employees-text" class="collapse" >
           </div>
         </div>
         <div class="w-100"></div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
             <button id="admin-is-employed" type="button" class="btn btn-primary" data-target="#admin-is-employed-form" data-toggle="collapse">
               Check If Employed
             </button>
         </div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
             <form id="admin-is-employed-form" class="collapse" >
               <div class="form-group">
                 <label for="potential-employee-wallet-address">Potential Employee Address</label>
@@ -62,22 +62,22 @@
             </form>  
         </div>
         <div class="w-100"></div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
           <button id="admin-get-payroll-balance" type="button" class="btn btn-primary" data-target="#admin-get-payroll-balance-text" data-toggle="collapse">
             Get Payroll Balance
           </button>
         </div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
           <div id="admin-get-payroll-balance-text" class="collapse" >
           </div>
         </div>
         <div class="w-100"></div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
             <button id="admin-deposit-payroll" type="button" class="btn btn-primary" data-target="#admin-deposit-payroll-form" data-toggle="collapse">
               Deposit Funds in Payroll
             </button>
         </div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
             <form id="admin-deposit-payroll-form" class="collapse" >
               <div class="form-group">
                 <label for="amount-to-deposit">Amount to deposit in ether</label>
@@ -87,12 +87,27 @@
             </form>  
         </div>
         <div class="w-100"></div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
+            <button id="admin-withdraw-payroll" type="button" class="btn btn-primary" data-target="#admin-withdraw-payroll-form" data-toggle="collapse">
+              Withdraw Funds From Payroll
+            </button>
+        </div>
+        <div style="background-color:white" class="col-6">
+            <form id="admin-withdraw-payroll-form" class="collapse" >
+              <div class="form-group">
+                <label for="amount-to-withdraw">Amount to withdraw in ether</label>
+                <input id="amount-to-withdraw" type="number" class="form-control" placeholder="Enter amount to withdraw in ether">
+              </div>
+              <button id="admin-withdraw-payroll-submit" type="submit" class="btn btn-primary">Submit</button>
+            </form>  
+        </div>
+        <div class="w-100"></div>
+        <div style="background-color:white" class="col-6">
             <button id="admin-generate-signature" type="button" class="btn btn-primary" data-target="#admin-generate-signature-form" data-toggle="collapse">
               Generate Hash and Signature
             </button>
         </div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
             <form id="admin-generate-signature-form" class="collapse" >
               <div class="form-group">
                 <label for="employee-payee-address">Employee To Pay Address</label>
@@ -102,12 +117,12 @@
             </form>  
         </div>
         <div class="w-100"></div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
             <button id="admin-timeout-channel" type="button" class="btn btn-primary" data-target="#admin-timeout-channel-form" data-toggle="collapse">
               Timeout Channel
             </button>
         </div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
             <form id="admin-timeout-channel-form" class="collapse" >
               <div class="form-group">
                 <label for="timeout-channel-employee-wallet-address">Employee Address</label>
@@ -119,30 +134,30 @@
     </div>
     <h2>Employees</h2>
     <div style="background-color:white" class="row">
-      <div style="background-color:bisque" class="col-6">
+      <div style="background-color:white" class="col-6">
         <button id="employee-is-punched-in" type="button" class="btn btn-primary" data-target="#employee-is-punched-in-text" data-toggle="collapse">
           Am I Punched In?
         </button>
       </div>
-      <div style="background-color:bisque" class="col-6">
+      <div style="background-color:white" class="col-6">
         <div id="employee-is-punched-in-text" class="collapse" >
         </div>
       </div>
       <div class="w-100"></div>
-      <div style="background-color:bisque" class="col-6">
+      <div style="background-color:white" class="col-6">
         <button id="employee-punch-in" type="button" class="btn btn-primary">
           Punch In
         </button>
       </div>
-      <div style="background-color:bisque" class="col-6">
+      <div style="background-color:white" class="col-6">
       </div>
       <div class="w-100"></div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
             <button id="employee-punch-out" type="button" class="btn btn-primary" data-target="#employee-punch-out-form" data-toggle="collapse">
               Punch Out
             </button>
         </div>
-        <div style="background-color:bisque" class="col-6">
+        <div style="background-color:white" class="col-6">
             <form id="employee-punch-out-form" class="collapse" >
               <div class="form-group">
                 <label for="employee-punch-out-hash">Employee Punch Out Hash</label>
