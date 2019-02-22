@@ -14,7 +14,7 @@ As an employee registered with the system, one can:
 
 Future improvements:
  * Automatically issue hourly payments to punched in employees
- * Enabled employees to easily verify received hash and signature
+ * Enable employees to easily verify received hash and signature
 
 ## Getting Started
 
@@ -33,7 +33,7 @@ The following software is required to build, test and run Truffle Payroll. The f
 
 ### Installing Dependencies
 
- * Run 'npm install' in the root directory. This will download all dependencies for Truffle Payroll
+ * Run 'npm install' in the root directory. This will download all package dependencies for Truffle Payroll
 
 ### Compiling
 
@@ -64,10 +64,10 @@ Below is a sample use-case of Truffle Payroll:
  5. Click the submit button and confirm the transaction. 
  6. Import the second account from ganache into Metamask. This account will represent the employee.
  7. With the employee account active in MetaMask, click on the 'Punch In' button and confirm the transaction. This will withdraw 4 ETH (1 ETH * 4 hours) from the Payroll account and open a Payment Channel with these funds. 
- 8. With the employer account active in MetaMask, click on the 'Generate Hash and Signature' button. Enter the employee's wallet address and a payment value of 1 (1 ETH).
- 9. Click the submit button and take note of the generated hash and signature. In a real world scenario, these are given to the employee on an out-of-band channel. 
- 10. With the employee account active in MetaMask, click on the 'Punch Out' button. Enter the noted hash, signature and 1 (1 ETH) as a punch out value.
- 11. Click the submit button and confirm the transaction. This will close the payment channel by selfdestructing the contract and send 1 ETH to the employee and the remaining 3 ETH to the Payroll contract.
+ 8. With the employer account active in MetaMask, click on the 'Generate Hash and Signature' button. Enter the employee's wallet address.
+ 9. Click the submit button and take note of the generated hash, signature and value. In a real world scenario, these are given to the employee on an out-of-band channel. 
+ 10. With the employee account active in MetaMask, click on the 'Punch Out' button. Enter the noted hash, signature and payment value.
+ 11. Click the submit button and confirm the transaction. This will close the payment channel by selfdestructing the contract and send ether to the employee depending on the amount of seconds works. The remaining ether is sent to the Payroll contract.
 
 
 **Note: A more detailed documentation of the project can be found in the 'doc' directory under the root folder. Videos showing the use of the application and a quick run through the code can be found under the 'videos' directory.**
