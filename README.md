@@ -46,7 +46,7 @@ The following software is required to build, test and run Truffle Payroll. The f
 
 ### Running the Tests
 
- * Run 'truffle test' in the root directory.
+ * Run 'truffle test' in the root directory. Ensure the availability of at least 6 wallets, the 1st of which having at least 10 ETH available in the balance.
  
 ### Running the application
 
@@ -69,4 +69,4 @@ Below is a sample use-case of Truffle Payroll:
  11. Click the submit button and confirm the transaction. This will close the payment channel by selfdestructing the contract and send 1 ETH to the employee and the remaining 3 ETH to the Payroll contract.
 
 
-**Note: A more detailed documentation of the project can be found in the 'doc' directory under the root folder.**
+**Note: A more detailed documentation of the project can be found in the 'doc' directory under the root folder. Videos showing the use of the application and a quick run through the code can be found under the 'videos' directory.**
