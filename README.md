@@ -29,6 +29,7 @@ The following software is required to build, test and run Truffle Payroll. The f
  * [Solc](https://www.npmjs.com/package/solc) v0.4.24
  * [Ganache](https://truffleframework.com/ganache) v1.3.0
  * [Metamask](https://metamask.io/) v5.3.0
+ * [Web3](https://web3js.readthedocs.io/en/latest/) v0.20.6
 
 ### Installing Dependencies
 
